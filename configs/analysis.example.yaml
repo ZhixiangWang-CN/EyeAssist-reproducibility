@@ -1,0 +1,98 @@
+project:
+  seed: 20260822
+  output_dir: outputs
+
+data:
+  # Replace with a controlled-access local path. Never commit patient images.
+  manifest: data/manifest.example.csv
+  fixation_files:
+    reader_group_subspecialist: data/private/neo/expertise/Expert/*_fixations.csv
+    reader_group_general_radiologist: data/private/neo/expertise/General/*_fixations.csv
+    session_1: data/private/neo/session/first/*_fixations.csv
+    session_2: data/private/neo/session/second/*_fixations.csv
+  image_dir: data/private/neo/images
+
+fixation_columns:
+  case: Source_File
+  x: CURRENT_FIX_X
+  y: CURRENT_FIX_Y
+  duration: CURRENT_FIX_DURATION
+  fixation_index: CURRENT_FIX_INDEX
+  reader: RECORDING_SESSION_LABEL
+
+density:
+  downsample_factor: 4
+  sigma_pixels: 40.0
+  smoothing_mass: 0.01
+  weighting: duration
+  pool_weighting: equal_reader
+  coordinate_policy: clip
+
+alignment:
+  enabled: true
+  strategy: global_reader_mean
+  sensitivity_strategy: leave_one_case_out
+  reference_state: session_1
+  translated_state: session_2
+  weighting: duration
+  primary_canvas_source: manifest_width_height
+  sensitivity_canvas_source: manifest_width_height
+
+pool_comparison:
+  log_base: 2
+  reader_group:
+    matched_size: 4
+    half_mixed_target: 2
+    half_mixed_off_state: 2
+    opposite_size: 4
+  session_condition:
+    matched_size: 2
+    half_mixed_target: 1
+    half_mixed_off_state: 1
+    opposite_size: 2
+
+splits:
+  group_column: case_id
+  label_column: label
+  classifier:
+    repeats: 50
+    train_cases: 60
+    test_cases: 15
+  saliency:
+    partitions: 17
+    executions_per_partition: 3
+    train_fraction: 0.60
+    validation_fraction: 0.15
+    test_fraction: 0.25
+    test_cases: 19
+    partition_seeds: [1235, 1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 1244, 1245, 1246, 1247, 1248, 1249, 1250, 1251]
+
+classifier:
+  architecture: resnet50
+  endpoint: normal_vs_abnormal
+  positive_class: abnormal
+  positive_cases: 62
+  negative_cases: 13
+  pretrained: imagenet1k_v1
+  image_size: 224
+  batch_size: 8
+  learning_rate: 0.0001
+  gaze_loss_weight: 0.5
+  optimizer: adam
+
+saliency:
+  architecture: unet_resnet34
+  pretrained_encoder: imagenet
+  image_size: 256
+  batch_size: 8
+  learning_rate: 0.0001
+  optimizer: adam
+  scheduler: cosine_annealing
+  early_stopping_patience: 15
+  loss:
+    kl_weight: 1.0
+    correlation_weight: 1.0
+    kl_direction: target_to_model
+  max_epochs: 60
+  partition_seeds: [1235, 1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 1244, 1245, 1246, 1247, 1248, 1249, 1250, 1251]
+  executions_per_partition: 3

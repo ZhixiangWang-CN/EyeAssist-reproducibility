@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eyeassist-reproducibility"
+version = "0.1.0"
+description = "Reproducible analysis toolkit for conditional radiology-gaze targets in EyeAssist"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "numpy>=2.0,<2.1",
+  "pandas>=2.3,<2.4",
+  "scipy>=1.13,<1.14",
+  "scikit-learn>=1.6,<1.7",
+  "Pillow>=11.3,<12",
+  "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+models = [
+  "torch>=2.8,<2.9",
+  "torchvision>=0.23,<0.24",
+]
+figures = ["matplotlib>=3.9,<3.10"]
+dev = ["pytest>=8.3,<9", "pytest-cov>=6,<7", "ruff>=0.9,<1"]
+
+[project.scripts]
+eyeassist = "eyeassist.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
