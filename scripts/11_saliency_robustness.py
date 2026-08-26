@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Independent robustness audit for the EyeAssist saliency-transfer experiment.
+"""Reconstruct EyeAssist saliency-transfer robustness analyses.
 
-This script does not import or modify the author analysis code. It uses only the
-released execution shards, fixation CSVs and case-dimension manifest in the
-current submission workspace. Outputs are written beside this script.
+The script reads locally supplied execution shards, fixation CSVs and a
+case-dimension manifest. Generated summaries are written to ``--output-dir``.
 
 Analyses
 --------
@@ -16,13 +15,12 @@ Analyses
    pooling rules (event-duration pooling and equal-reader pooling), with and
    without a 1% uniform floor.
 4. Quantify how the published global session alignment changes the entropy of
-   the second-session pooled target. This does not substitute for rescoring the
-   trained saliency models against aligned targets; prediction maps/checkpoints
-   are not present in the current workspace.
+   the second-session pooled target.
 """
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import math
@@ -33,10 +31,9 @@ import numpy as np
 import pandas as pd
 
 
-ROOT = Path(__file__).resolve().parents[2]
-OUT = Path(__file__).resolve().parent
-DATA = ROOT / "figure-source-revision-20260822" / "Figure6" / "数据与素材" / "汇总数据"
-MANIFEST = ROOT / "tmp" / "final_claim_audit" / "case_dimensions_manifest.csv"
+OUT = Path("outputs/saliency_robustness")
+DATA = Path(".")
+MANIFEST = Path("manifest.csv")
 
 REFS = ["expert_consensus", "generalist_consensus", "pre_report", "post_report"]
 LABELS = {
@@ -55,10 +52,10 @@ AXIS_CONTRASTS = {
 }
 
 FIXATION_SOURCES = {
-    "expert_consensus": ROOT / "figure-source-revision-20260822" / "Figure3" / "数据与素材" / "EyeAssist-Neo" / "expertise" / "Expert",
-    "generalist_consensus": ROOT / "figure-source-revision-20260822" / "Figure3" / "数据与素材" / "EyeAssist-Neo" / "expertise" / "General",
-    "pre_report": ROOT / "figure-source-revision-20260822" / "Figure4" / "数据与素材" / "EyeAssist-Neo" / "context" / "before",
-    "post_report": ROOT / "figure-source-revision-20260822" / "Figure4" / "数据与素材" / "EyeAssist-Neo" / "context" / "after",
+    "expert_consensus": Path("."),
+    "generalist_consensus": Path("."),
+    "pre_report": Path("."),
+    "post_report": Path("."),
 }
 
 GLOBAL_OFFSETS = {
@@ -437,18 +434,37 @@ def target_entropy_audit() -> dict:
     }
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--execution-shards-dir", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--subspecialist-fixations", type=Path, required=True)
+    parser.add_argument("--general-radiologist-fixations", type=Path, required=True)
+    parser.add_argument("--session-1-fixations", type=Path, required=True)
+    parser.add_argument("--session-2-fixations", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, default=OUT)
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
+    global OUT, DATA, MANIFEST, FIXATION_SOURCES
+    OUT = args.output_dir
+    DATA = args.execution_shards_dir
+    MANIFEST = args.manifest
+    FIXATION_SOURCES = {
+        "expert_consensus": args.subspecialist_fixations,
+        "generalist_consensus": args.general_radiologist_fixations,
+        "pre_report": args.session_1_fixations,
+        "post_report": args.session_2_fixations,
+    }
+    OUT.mkdir(parents=True, exist_ok=True)
     transfer = transfer_audit()
     entropy = target_entropy_audit()
     output = {
-        "scope": "current workspace only; independent audit; author code unchanged",
+        "scope": "locally supplied execution records and controlled fixation inputs",
         "transfer": transfer,
         "target_entropy": entropy,
-        "aligned_transfer_limitation": (
-            "The current workspace contains per-case scalar scores but no saved model saliency maps "
-            "or saliency-model checkpoints. Exact rescoring against aligned targets and entropy-matched "
-            "target retraining therefore cannot be performed from the released files alone."
-        ),
     }
     (OUT / "2026-08-24_saliency_robustness.json").write_text(json.dumps(output, indent=2))
     print(json.dumps({

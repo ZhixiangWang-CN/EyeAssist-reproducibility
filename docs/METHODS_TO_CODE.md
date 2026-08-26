@@ -22,10 +22,11 @@ locked study record.
 | PE slice-stable sensitivity | `scripts/12_pe_slice_stable_sensitivity.py` | maximal unchanged-slice runs; 2/3/5-row definitions; fixed-C logistic regression; LOCO/LORO | implemented/reconstructed |
 | Reader-level exact sign test | `statistics.py::exact_sign_permutation` | inference unit is reader | implemented/tested |
 | Case/split paired bootstrap | `statistics.py`, `scripts/10_case_cluster_auc.py` | paired differences; overlapping case appearances retained within cluster; seed versioned | implemented/tested |
-| Classifier repeated partitions | archived case-level predictions | 50 overlapping label-stratified case splits; arms paired within split | implemented/audited |
-| Classifier repeated-split inference | `scripts/10_case_cluster_auc.py` with an author-provided case-level workbook | mean of 50 within-split AUROCs; 20,000 label-stratified resamples of 75 case clusters with all four arms paired | implemented/audited |
-| ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); reported inference follows the supplied case-level predictions and case-cluster analysis | implemented; results workbook supplied |
+| Classifier repeated partitions | locally supplied case-level predictions | 50 overlapping label-stratified case splits; arms paired within split | analysis implemented/audited; local input required |
+| Classifier repeated-split inference | `scripts/10_case_cluster_auc.py` with an author-provided case-level workbook | mean of 50 within-split AUROCs; 20,000 label-stratified resamples of 75 case clusters with all four arms paired | implemented/audited; local input required |
+| ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); reported inference follows the supplied case-level predictions and case-cluster analysis | model and loss implemented; generated predictions not distributed |
 | U-Net-style saliency model | `models.py` | ResNet-34 encoder; KL + correlation objective; Adam; cosine; patience 15; 60 epochs | implemented |
+| GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | target reader excluded; paired source identities; exact four-reader pools; source-study-cluster bootstrap | implemented/tested |
 
 ## Provenance rules
 

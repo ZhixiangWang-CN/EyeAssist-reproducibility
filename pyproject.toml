@@ -15,6 +15,7 @@ dependencies = [
   "scikit-learn>=1.6,<1.7",
   "Pillow>=11.3,<12",
   "PyYAML>=6.0,<7",
+  "openpyxl>=3.1,<4",
 ]
 
 [project.optional-dependencies]

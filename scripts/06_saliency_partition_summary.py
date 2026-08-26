@@ -43,8 +43,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--shards", required=True, help="Glob matching expA_shard*.json")
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--resamples", type=int, default=5000)
+    parser.add_argument("--seed", type=int, default=20260824)
+    parser.add_argument("--resamples", type=int, default=20_000)
     args = parser.parse_args()
 
     paths = [Path(path) for path in sorted(glob.glob(args.shards))]

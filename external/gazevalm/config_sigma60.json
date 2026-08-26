@@ -1,0 +1,13 @@
+{
+  "pool_size": 4,
+  "grid_size": 270,
+  "native_size": 1080,
+  "sigma_native_px": 60.0,
+  "alpha": 0.01,
+  "pool_mode": "exact",
+  "sampled_draws": 512,
+  "pool_seed": 20260824,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20260824,
+  "cache_version": "gazevalm-fixed-pool-sigma60-v2"
+}

@@ -26,6 +26,7 @@ repository implements the manuscript's auditable analysis backbone:
 - reader-group entropy and 10×10 coverage reconstructed from fixation CSVs;
 - four-metric saliency-transfer robustness and target-entropy/effective-support sensitivity;
 - all-reader EyeAssist-PE slice-stable session attribution after immediate slice transitions are excluded;
+- fixed-pool task analysis for the public GazeVaLM cohort, including its data audit and synthetic test;
 - configurable case-grouped repeated partitions;
 - ResNet-34 U-Net-style saliency and ResNet-50 auxiliary gaze-supervision model factories;
 - deterministic synthetic tests that require no clinical data.
@@ -81,6 +82,7 @@ python scripts/03_density_pool_analysis.py \
 | Classification results | `scripts/10_case_cluster_auc.py --source <case-level-workbook.xlsx>` | mean within-split AUROC and paired case-cluster intervals across 50 shared runs |
 | Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
 | Gaze-supervised classification | `make_classifier`, `attention_kl` | per-split AUROC table |
+| GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | locally generated target-, stimulus- and source-study-level contrasts |
 
 The detailed claim-to-code trace is in [docs/METHODS_TO_CODE.md](docs/METHODS_TO_CODE.md).
 
@@ -101,11 +103,15 @@ See [docs/DATA_SCHEMA.md](docs/DATA_SCHEMA.md) for required fields and QC proven
 ├── data/                    # example manifest; controlled data are git-ignored
 ├── docs/                    # data schema and methods-to-code mapping
 ├── examples/                # data-free end-to-end smoke test
+├── external/gazevalm/       # executable public-cohort analysis and data-free tests
 ├── scripts/                 # ordered analysis entry points
 ├── src/eyeassist/           # reusable implementation
 ├── tests/                   # deterministic standard-library unit tests
-└── outputs/                 # generated artifacts, not hand-edited results
+└── outputs/                 # locally generated artifacts; intentionally not committed
 ```
+
+The repository distributes source code, configurations and tests. It does not distribute
+EyeAssist predictions, fitted-model outputs or derived result tables.
 
 ## Citation
 

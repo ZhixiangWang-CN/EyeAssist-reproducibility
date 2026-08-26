@@ -23,3 +23,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Synthetic end-to-end analysis
         run: python examples/synthetic_demo.py --output outputs/ci-demo
+      - name: GazeVaLM data-free analysis tests
+        run: python external/gazevalm/test_synthetic.py
