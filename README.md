@@ -29,6 +29,7 @@ repository implements the manuscript's auditable analysis backbone:
 - fixed-pool task analysis for the public GazeVaLM cohort, including its data audit and synthetic test;
 - configurable case-grouped repeated partitions;
 - ResNet-34 U-Net-style saliency and ResNet-50 auxiliary gaze-supervision model factories;
+- leakage-safe ResNet-50 training, checkpoint selection and held-out evaluation entry points;
 - deterministic synthetic tests that require no clinical data.
 
 Case-level bootstrap inference retains all appearances of a sampled case and all paired model arms
@@ -82,9 +83,61 @@ python scripts/03_density_pool_analysis.py \
 | Classification results | `scripts/10_case_cluster_auc.py --source <case-level-workbook.xlsx>` | mean within-split AUROC and paired case-cluster intervals across 50 shared runs |
 | Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
 | Gaze-supervised classification | `make_classifier`, `attention_kl` | per-split AUROC table |
+| ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | `last.pt`, leakage-safe `selected.pt` and local training history |
+| ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | local case-level probabilities and operating-point metrics |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | locally generated target-, stimulus- and source-study-level contrasts |
 
 The detailed claim-to-code trace is in [docs/METHODS_TO_CODE.md](docs/METHODS_TO_CODE.md).
+
+## ResNet-50 training and testing
+
+Install the optional model dependencies:
+
+```bash
+python -m pip install -e '.[models]'
+```
+
+The manifest uses one row per case. The three gaze-supervised arms additionally require
+`gaze_generalist_path`, `gaze_cold_read_path` and `gaze_informed_path`; values may point to a
+non-negative `.npy` density or grayscale density image. Generated checkpoints and predictions are
+written below `outputs/` and remain excluded from Git.
+
+Train one arm on one stored split:
+
+```bash
+python scripts/13_train_resnet50_classifier.py \
+  --manifest data/private/neo/classifier_manifest.csv \
+  --splits data/private/neo/classifier_splits.csv \
+  --split-id 0 \
+  --arm informed_gaze \
+  --epochs <locked-epoch-count> \
+  --seed <locked-optimization-seed> \
+  --pretrained \
+  --checkpoint-rule last_epoch \
+  --output-dir outputs/classifier
+```
+
+`last_epoch` is the default rule for a train/test-only split and saves the fixed final epoch as
+`selected.pt`. Alternatively, `best_val_loss` or `best_val_auroc` requires `--validation-cases`;
+that validation subset is drawn only from the training cases. The held-out test cases are never
+loaded by the training loop and cannot select a checkpoint.
+
+Evaluate the selected checkpoint once:
+
+```bash
+python scripts/14_evaluate_resnet50_classifier.py \
+  --manifest data/private/neo/classifier_manifest.csv \
+  --splits data/private/neo/classifier_splits.csv \
+  --split-id 0 \
+  --arm informed_gaze \
+  --checkpoint outputs/classifier/split_000/informed_gaze/selected.pt \
+  --output-csv outputs/classifier/split_000/informed_gaze/test_predictions.csv
+```
+
+Every checkpoint records the split and arm, model/optimizer/scheduler states, epoch, selection
+rule, run parameters, input-table hashes and the exact train, validation and held-out test case IDs.
+An existing run directory is never silently overwritten; continuing it requires `--resume`, which
+also verifies the locked input hashes and all optimization/model-selection settings.
 
 ## Data access
 

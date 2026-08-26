@@ -14,6 +14,19 @@ One row per imaging case:
 | `include` | 0/1 | ✓ | analysis inclusion flag |
 | `exclusion_reason` | string | when excluded | prespecified/acquisition/QC reason |
 
+For ResNet-50 training, the three gaze-supervised arms use the following local-only manifest
+columns. They are not required for the image-only arm.
+
+| Field | Required arm | Meaning |
+|---|---|---|
+| `gaze_generalist_path` | generalist gaze | path to the normalized general-radiologist target |
+| `gaze_cold_read_path` | first-session gaze | path to the normalized first-session target |
+| `gaze_informed_path` | second-session gaze | path to the normalized second-session target |
+
+Targets may be non-negative two-dimensional NumPy arrays or grayscale images. The loader resizes
+each target to the model input grid, renormalizes it to unit mass and applies any configured
+horizontal flip jointly to the radiograph and target.
+
 An optional grouping field may be supplied when a study design requires grouping beyond the
 imaging-case identifier.
 

@@ -24,7 +24,9 @@ locked study record.
 | Case/split paired bootstrap | `statistics.py`, `scripts/10_case_cluster_auc.py` | paired differences; overlapping case appearances retained within cluster; seed versioned | implemented/tested |
 | Classifier repeated partitions | locally supplied case-level predictions | 50 overlapping label-stratified case splits; arms paired within split | analysis implemented/audited; local input required |
 | Classifier repeated-split inference | `scripts/10_case_cluster_auc.py` with an author-provided case-level workbook | mean of 50 within-split AUROCs; 20,000 label-stratified resamples of 75 case clusters with all four arms paired | implemented/audited; local input required |
-| ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); reported inference follows the supplied case-level predictions and case-cluster analysis | model and loss implemented; generated predictions not distributed |
+| ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); CAM class explicitly logged | implemented |
+| ResNet-50 training/checkpoint selection | `scripts/13_train_resnet50_classifier.py` | test cases excluded; fixed-final-epoch selection or training-only validation; atomic model/optimizer/scheduler checkpoints | implemented |
+| ResNet-50 held-out testing | `scripts/14_evaluate_resnet50_classifier.py` | selected checkpoint only; locked split/arm and test-case verification; case-level abnormal probability | implemented |
 | U-Net-style saliency model | `models.py` | ResNet-34 encoder; KL + correlation objective; Adam; cosine; patience 15; 60 epochs | implemented |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | target reader excluded; paired source identities; exact four-reader pools; source-study-cluster bootstrap | implemented/tested |
 
