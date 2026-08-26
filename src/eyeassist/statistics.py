@@ -10,7 +10,7 @@ import numpy as np
 def percentile_bootstrap_mean(
     values: np.ndarray,
     *,
-    n_resamples: int = 5000,
+    n_resamples: int = 2000,
     seed: int = 20260822,
     confidence: float = 0.95,
 ) -> tuple[float, float, float]:
@@ -44,7 +44,7 @@ def paired_bootstrap_difference(
     first: np.ndarray,
     second: np.ndarray,
     *,
-    n_resamples: int = 5000,
+    n_resamples: int = 2000,
     seed: int = 20260822,
 ) -> tuple[float, float, float]:
     first = np.asarray(first, dtype=float)

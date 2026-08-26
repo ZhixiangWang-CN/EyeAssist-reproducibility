@@ -9,6 +9,7 @@ all manuscript summaries can be regenerated from an auditable intermediate.
 from __future__ import annotations
 
 import argparse
+import json
 from glob import glob
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from eyeassist.config import load_config
 from eyeassist.gaze import density_map, fixation_log_score
 from eyeassist.io import read_fixations, read_manifest
 from eyeassist.pooling import held_out_configuration_scores
+from eyeassist.statistics import percentile_bootstrap_mean
 
 
 def main() -> int:
@@ -25,6 +27,10 @@ def main() -> int:
     parser.add_argument("--config", default="configs/analysis.yaml")
     parser.add_argument("--axis", choices=["reader_group", "session_condition"], required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--summary-output",
+        help="Optional JSON path for case-level contrast estimates and bootstrap intervals",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
@@ -112,8 +118,47 @@ def main() -> int:
 
     output = root / args.output
     output.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(output, index=False)
+    scores = pd.DataFrame(rows)
+    scores.to_csv(output, index=False)
+    resampling = config["resampling"]["finite_panel_case_bootstrap"]
+    case_values = scores.groupby("case_id", sort=True)[
+        ["matched_minus_half_mixed", "matched_minus_opposite", "matched_minus_all_records"]
+    ].mean()
+    case_values["all_records_minus_matched"] = -case_values["matched_minus_all_records"]
+    summary = {
+        "axis": args.axis,
+        "unit": str(resampling["unit"]),
+        "n_cases": int(len(case_values)),
+        "n_resamples": int(resampling["n_resamples"]),
+        "seed": int(resampling["seed"]),
+        "confidence": float(resampling["confidence"]),
+        "contrasts": {},
+    }
+    for contrast in (
+        "matched_minus_half_mixed",
+        "matched_minus_opposite",
+        "all_records_minus_matched",
+    ):
+        estimate, low, high = percentile_bootstrap_mean(
+            case_values[contrast].to_numpy(),
+            n_resamples=int(resampling["n_resamples"]),
+            seed=int(resampling["seed"]),
+            confidence=float(resampling["confidence"]),
+        )
+        summary["contrasts"][contrast] = {
+            "estimate": estimate,
+            "ci_low": low,
+            "ci_high": high,
+        }
+    summary_output = (
+        root / args.summary_output
+        if args.summary_output
+        else output.with_suffix(".summary.json")
+    )
+    summary_output.parent.mkdir(parents=True, exist_ok=True)
+    summary_output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {len(rows):,} held-out case-reader rows to {output}")
+    print(f"Wrote case-bootstrap summary to {summary_output}")
     return 0
 
 

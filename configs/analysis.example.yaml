@@ -51,6 +51,28 @@ pool_comparison:
     half_mixed_off_state: 1
     opposite_size: 2
 
+resampling:
+  finite_panel_case_bootstrap:
+    unit: case
+    n_resamples: 2000
+    seed: 20260822
+    confidence: 0.95
+  fixed_model_case_bootstrap:
+    unit: case
+    n_resamples: 5000
+    seed: 20260822
+    confidence: 0.95
+  saliency_partition_bootstrap:
+    unit: partition
+    n_resamples: 20000
+    seed: 20260824
+    confidence: 0.95
+  classifier_case_cluster_bootstrap:
+    unit: case
+    n_resamples: 20000
+    seed: 20260824
+    confidence: 0.95
+
 splits:
   group_column: case_id
   label_column: label
@@ -78,6 +100,13 @@ classifier:
   batch_size: 8
   learning_rate: 0.0001
   gaze_loss_weight: 0.5
+  attention_loss: kl_target_to_cam
+  cam_layer: layer4
+  cam_class: true_label
+  checkpoint_rule: last_epoch
+  validation_cases: 0
+  horizontal_flip_probability: 0.0
+  checkpoint_selection_uses_test_data: false
   optimizer: adam
 
 saliency:

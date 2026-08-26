@@ -82,7 +82,7 @@ python scripts/03_density_pool_analysis.py \
 | Repeated internal evaluation | `eyeassist.splits` | configurable group-held-out split manifest |
 | Classification results | `scripts/10_case_cluster_auc.py --source <case-level-workbook.xlsx>` | mean within-split AUROC and paired case-cluster intervals across 50 shared runs |
 | Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
-| Gaze-supervised classification | `make_classifier`, `attention_kl` | per-split AUROC table |
+| Gaze-supervised classification | `make_classifier`, `attention_kl` | CE + 0.5 KL(target || layer4 CAM), with CAM computed for the true class |
 | ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | `last.pt`, leakage-safe `selected.pt` and local training history |
 | ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | local case-level probabilities and operating-point metrics |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | locally generated target-, stimulus- and source-study-level contrasts |
@@ -113,11 +113,14 @@ python scripts/13_train_resnet50_classifier.py \
   --epochs <locked-epoch-count> \
   --seed <locked-optimization-seed> \
   --pretrained \
+  --cam-class true_label \
+  --horizontal-flip-probability 0 \
   --checkpoint-rule last_epoch \
   --output-dir outputs/classifier
 ```
 
-`last_epoch` is the default rule for a train/test-only split and saves the fixed final epoch as
+The released specification uses the normalized rectified `layer4` CAM for the ground-truth class,
+no geometric augmentation and a gaze-loss weight of 0.5. `last_epoch` is the default rule for a train/test-only split and saves the fixed final epoch as
 `selected.pt`. Alternatively, `best_val_loss` or `best_val_auroc` requires `--validation-cases`;
 that validation subset is drawn only from the training cases. The held-out test cases are never
 loaded by the training loop and cannot select a checkpoint.
