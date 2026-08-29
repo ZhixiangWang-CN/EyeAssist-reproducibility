@@ -28,19 +28,6 @@ Targets may be non-negative two-dimensional NumPy arrays or grayscale images. Th
 each target to the model input grid, renormalizes it to unit mass and applies any configured
 horizontal flip jointly to the radiograph and target.
 
-For saliency-transfer training, the same one-row-per-case manifest uses four local-only target
-columns:
-
-| Field | Saliency target |
-|---|---|
-| `saliency_expert_consensus_path` | subspecialist-group consensus |
-| `saliency_generalist_consensus_path` | general-radiologist-group consensus |
-| `saliency_pre_report_path` | first-session pre-report consensus |
-| `saliency_post_report_path` | second-session post-report consensus |
-
-Each value points to a non-negative two-dimensional NumPy array or grayscale density image. These
-controlled target maps and every generated checkpoint or prediction remain outside Git.
-
 Computational partitions use `patient_id` as the grouping field. In EyeAssist-Neo, the 75 cases
 map one-to-one to 75 patients, so patient-grouped and case-grouped partitions are identical.
 
