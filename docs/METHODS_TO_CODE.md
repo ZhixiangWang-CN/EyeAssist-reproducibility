@@ -30,7 +30,7 @@ locked study record.
 | ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); normalized rectified `layer4` CAM for the true class | implemented |
 | ResNet-50 public rerun protocol | `scripts/13_train_resnet50_classifier.py` | 60 epochs; seed `20260824 + split_id`, shared across arms; no augmentation; test cases excluded; epoch-60 selection; atomic model/optimizer/scheduler checkpoints | implemented |
 | ResNet-50 held-out testing | `scripts/14_evaluate_resnet50_classifier.py` | selected checkpoint only; locked split/arm and test-case verification; case-level abnormal probability | implemented |
-| U-Net-style saliency model | `models.py` | ResNet-34 encoder; KL + correlation objective; Adam; cosine; patience 15; 60 epochs | implemented |
+| U-Net-style saliency model | `models.py`, `scripts/18_train_evaluate_saliency_transfer.py` | ResNet-34 encoder; KL + correlation objective; Adam; cosine schedule; 60 epochs; final-epoch checkpoint; local held-out prediction export | implemented |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | target reader excluded; paired source identities; exact four-reader pools; source-study-cluster bootstrap | implemented/tested |
 | GazeVaLM task-direction interaction | `external/gazevalm/summarize_task_interaction.py` | task contrasts stratified by real/synthetic authenticity with source-study clustering | implemented/tested |
 | GazeVaLM target concentration | `external/gazevalm/summarize_task_concentration.py` | equal-reader pooled densities; entropy and Shannon/Simpson effective support; source-study clustering | implemented/tested |

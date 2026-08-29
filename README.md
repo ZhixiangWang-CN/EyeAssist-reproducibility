@@ -83,7 +83,7 @@ python scripts/03_density_pool_analysis.py \
 | Repeated internal evaluation | `eyeassist.splits` | configurable group-held-out split manifest |
 | Classification results | `scripts/10_case_cluster_auc.py --source <case-level-workbook.xlsx>` | mean within-split AUROC and paired case-cluster intervals across 50 shared runs |
 | Classification at fixed specificity | `scripts/16_classification_fixed_specificity.py` | mean split sensitivity at a declared specificity with paired case-cluster intervals |
-| Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
+| Saliency transfer | `scripts/18_train_evaluate_saliency_transfer.py`, `make_saliency_model`, `saliency_objective` | final-epoch models and local held-out predictions for each target arm |
 | Gaze-supervised classification | `make_classifier`, `attention_kl` | CE + 0.5 KL(target || layer4 CAM), with CAM computed for the true class |
 | ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | `last.pt`, leakage-safe `selected.pt` and local training history |
 | ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | local case-level probabilities and operating-point metrics |
@@ -106,6 +106,31 @@ python scripts/17_saliency_case_cluster_bootstrap.py \
 The detailed claim-to-code trace is in [docs/METHODS_TO_CODE.md](docs/METHODS_TO_CODE.md).
 The inferential families and interpretation rules are frozen in the
 [final analysis specification](FINAL_ANALYSIS_SPECIFICATION.md).
+
+## Saliency-transfer training and held-out prediction
+
+The authorized local manifest contains one row per case and paths to the radiograph plus the four
+target densities documented in [docs/DATA_SCHEMA.md](docs/DATA_SCHEMA.md). The partition table
+contains `case_id`, `partition` (`train`, `validation` or `test`) and either `partition_id` or
+`split_id`. Train all four target arms for one partition/execution with:
+
+```bash
+python scripts/18_train_evaluate_saliency_transfer.py \
+  --manifest data/private/neo/saliency_manifest.csv \
+  --splits data/private/neo/saliency_partitions.csv \
+  --partition-id 0 \
+  --execution-id 0 \
+  --seed 1235 \
+  --epochs 60 \
+  --output-dir outputs/saliency_transfer
+```
+
+The runner enforces patient-disjoint train, validation and test sets, uses the same seed and
+schedule across the four target arms, selects the final-epoch checkpoint and exports normalized
+held-out prediction maps. It does not use test cases for optimization or checkpoint selection.
+Checkpoints, histories and predictions are written only beneath `outputs/`, which is ignored by
+Git. Repeating the command for the 18 partitions and three executions produces the 216 fitted
+models described in the manuscript.
 
 ## ResNet-50 training and testing
 
