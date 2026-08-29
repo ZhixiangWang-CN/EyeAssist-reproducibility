@@ -4,8 +4,10 @@ No clinical data are committed to this repository.
 
 Create `data/private/` locally and place controlled-access files under the paths declared in
 `configs/analysis.yaml`. The directory is ignored by Git. Every analysis requires a manifest with
-one row per imaging case. The grouping field used for a particular analysis is declared explicitly
-in `configs/analysis.yaml`.
+one row per imaging case and a stable de-identified `patient_id`. EyeAssist-Neo contains one
+radiograph per patient (75 cases from 75 patients), so patient- and case-grouped partitions are
+identical. The grouping field used for a particular analysis is declared explicitly in
+`configs/analysis.yaml`.
 
 Required fixation fields for the packaged EyeAssist-Neo format are:
 

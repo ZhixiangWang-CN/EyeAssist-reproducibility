@@ -22,14 +22,18 @@ locked study record.
 | PE slice-stable sensitivity | `scripts/12_pe_slice_stable_sensitivity.py` | maximal unchanged-slice runs; 2/3/5-row definitions; fixed-C logistic regression; LOCO/LORO | implemented/reconstructed |
 | Reader-level exact sign test | `statistics.py::exact_sign_permutation` | inference unit is reader | implemented/tested |
 | Finite-panel case bootstrap | `statistics.py`, `scripts/03_density_pool_analysis.py` | 2,000 case resamples; seed 20260822; case-first contrast summary | implemented/configured |
+| Three-of-five reader subgroup sensitivity | `scripts/15_reader_profession_sensitivity.py` | all ten three-member subspecialist subsets; equal two-reader references; case bootstrap and exact three-versus-five allocation test | implemented/reconstructed |
 | Case/split paired bootstrap | `statistics.py`, `scripts/10_case_cluster_auc.py` | paired differences; overlapping case appearances retained within cluster; seed versioned | implemented/tested |
 | Classifier repeated partitions | locally supplied case-level predictions | 50 overlapping label-stratified case splits; arms paired within split | analysis implemented/audited; local input required |
 | Classifier repeated-split inference | `scripts/10_case_cluster_auc.py` with an author-provided case-level workbook | mean of 50 within-split AUROCs; 20,000 label-stratified resamples of 75 case clusters with all four arms paired | implemented/audited; local input required |
+| Classifier fixed-specificity sensitivity | `scripts/16_classification_fixed_specificity.py` with locally supplied paired predictions | empirical split ROC interpolated at 80% specificity; 20,000 label-stratified case-cluster resamples; seed 20260827 | implemented/audited; local input required |
 | ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); normalized rectified `layer4` CAM for the true class | implemented |
-| ResNet-50 training/checkpoint selection | `scripts/13_train_resnet50_classifier.py` | no augmentation in the locked example; test cases excluded; fixed-final-epoch selection; atomic model/optimizer/scheduler checkpoints | implemented |
+| ResNet-50 public rerun protocol | `scripts/13_train_resnet50_classifier.py` | 60 epochs; seed `20260824 + split_id`, shared across arms; no augmentation; test cases excluded; epoch-60 selection; atomic model/optimizer/scheduler checkpoints | implemented |
 | ResNet-50 held-out testing | `scripts/14_evaluate_resnet50_classifier.py` | selected checkpoint only; locked split/arm and test-case verification; case-level abnormal probability | implemented |
 | U-Net-style saliency model | `models.py` | ResNet-34 encoder; KL + correlation objective; Adam; cosine; patience 15; 60 epochs | implemented |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | target reader excluded; paired source identities; exact four-reader pools; source-study-cluster bootstrap | implemented/tested |
+| GazeVaLM task-direction interaction | `external/gazevalm/summarize_task_interaction.py` | task contrasts stratified by real/synthetic authenticity with source-study clustering | implemented/tested |
+| GazeVaLM target concentration | `external/gazevalm/summarize_task_concentration.py` | equal-reader pooled densities; entropy and Shannon/Simpson effective support; source-study clustering | implemented/tested |
 
 ## Provenance rules
 

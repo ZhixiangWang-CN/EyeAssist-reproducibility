@@ -1,3 +1,3 @@
-case_id,image_path,width,height,label,subset,include,exclusion_reason,gaze_generalist_path,gaze_cold_read_path,gaze_informed_path
-neo_001,data/private/neo/images/1.jpg,2000,2800,1,EyeAssist-Neo,1,,,,
-neo_002,data/private/neo/images/2.jpg,2000,2800,0,EyeAssist-Neo,1,,,,
+case_id,patient_id,image_path,width,height,label,subset,include,exclusion_reason,gaze_generalist_path,gaze_cold_read_path,gaze_informed_path
+neo_001,neo_patient_001,data/private/neo/images/1.jpg,2000,2800,1,EyeAssist-Neo,1,,,,
+neo_002,neo_patient_002,data/private/neo/images/2.jpg,2000,2800,0,EyeAssist-Neo,1,,,,

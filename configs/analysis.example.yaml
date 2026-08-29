@@ -72,9 +72,14 @@ resampling:
     n_resamples: 20000
     seed: 20260824
     confidence: 0.95
+  classifier_fixed_specificity_case_cluster_bootstrap:
+    unit: case
+    n_resamples: 20000
+    seed: 20260827
+    confidence: 0.95
 
 splits:
-  group_column: case_id
+  group_column: patient_id
   label_column: label
   classifier:
     repeats: 50
@@ -104,7 +109,12 @@ classifier:
   cam_layer: layer4
   cam_class: true_label
   checkpoint_rule: last_epoch
+  max_epochs: 60
   validation_cases: 0
+  optimization_seed_base: 20260824
+  optimization_seed_rule: base_plus_split_id
+  optimization_seed_range: [20260824, 20260873]
+  share_seed_across_arms_within_split: true
   horizontal_flip_probability: 0.0
   checkpoint_selection_uses_test_data: false
   optimizer: adam

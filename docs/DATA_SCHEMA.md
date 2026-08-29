@@ -7,6 +7,7 @@ One row per imaging case:
 | Field | Type | Required | Meaning |
 |---|---|:---:|---|
 | `case_id` | string | ✓ | stable de-identified imaging-case key |
+| `patient_id` | string | ✓ | stable de-identified patient key; one-to-one with `case_id` in EyeAssist-Neo |
 | `image_path` | relative path | ✓ | local controlled-access path |
 | `width`, `height` | integer | ✓ | displayed canvas in pixels |
 | `label` | integer/string | ✓ | locked task label with provenance in the data dictionary |
@@ -27,8 +28,8 @@ Targets may be non-negative two-dimensional NumPy arrays or grayscale images. Th
 each target to the model input grid, renormalizes it to unit mass and applies any configured
 horizontal flip jointly to the radiograph and target.
 
-An optional grouping field may be supplied when a study design requires grouping beyond the
-imaging-case identifier.
+Computational partitions use `patient_id` as the grouping field. In EyeAssist-Neo, the 75 cases
+map one-to-one to 75 patients, so patient-grouped and case-grouped partitions are identical.
 
 ## Canonical fixation table
 

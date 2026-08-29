@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""External fixed-pool replication on the public GazeVaLM release.
+"""Fixed-pool task analysis on the public GazeVaLM release.
 
 The primary estimand is the held-out log-score advantage of a task-matched
 reference over equal-size half-mixed and opposite-task references. Source
@@ -679,7 +679,7 @@ def run(data_root: Path, output_dir: Path, cache_dir: Path, config: Config) -> N
         )
     ]
     lines = [
-        "GazeVaLM external fixed-pool replication",
+        "GazeVaLM fixed-pool task analysis",
         f"Eligible target records: {len(target_df)}",
         f"Common stimuli: {len(common_stimuli)}; source-study clusters: {audit['n_source_study_pairs']}",
     ]
