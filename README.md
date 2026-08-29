@@ -74,7 +74,7 @@ python scripts/03_density_pool_analysis.py \
 | Fixation preprocessing and density maps | `eyeassist.gaze.density_map` | unit-mass case-reader maps |
 | Session translation | `reader_offset`, `leave_one_case_out_offsets` | primary and cross-fitted reader offsets on the same case-specific manifest dimensions |
 | Alignment sensitivity | `scripts/05_alignment_sensitivity.py` | relocation and density-score point-estimate comparison on the canonical case-specific canvases; primary intervals come from the Fig. 5 case-bootstrap pipeline |
-| Saliency partition inference | `scripts/06_saliency_partition_summary.py` | 17 partition-level contrasts |
+| Saliency case-cluster inference | `scripts/17_saliency_case_cluster_bootstrap.py --source <per-case-saliency.csv>` | paired case-cluster intervals while retaining repeated test-partition appearances |
 | Saliency multi-metric and target-concentration sensitivity | `scripts/11_saliency_robustness.py` | four 4×4 metric matrices, paired contrasts and entropy/effective support |
 | EyeAssist-PE slice-stable sensitivity | `scripts/12_pe_slice_stable_sensitivity.py` | stream-eligibility audit, paired summaries and case-/reader-held-out attribution |
 | Finite-panel scoring | `held_out_configuration_scores` | case-reader pool scores |
@@ -89,6 +89,17 @@ python scripts/03_density_pool_analysis.py \
 | ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | local case-level probabilities and operating-point metrics |
 | Three-of-five reader subgroup sensitivity | `scripts/15_reader_profession_sensitivity.py` | all ten three-member subspecialist subsets evaluated with equal-size references |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py`, `summarize_task_interaction.py`, `summarize_task_concentration.py` | locally generated task contrasts, authenticity strata, entropy and effective support |
+
+The saliency case-cluster input schema is `case`, `trained_on`, `scored_against`,
+`metric`, `mean` and `appearances`. The case-level table is a derived controlled-data
+output and is not distributed. With an authorized local table, run:
+
+```bash
+python scripts/17_saliency_case_cluster_bootstrap.py \
+  --source /path/to/per_case_saliency.csv \
+  --output outputs/saliency_case_cluster_contrasts.csv \
+  --metadata outputs/saliency_case_cluster_audit.json
+```
 
 The detailed claim-to-code trace is in [docs/METHODS_TO_CODE.md](docs/METHODS_TO_CODE.md).
 The dataset description is provided as a [datasheet](DATASHEET.md) and machine-readable
