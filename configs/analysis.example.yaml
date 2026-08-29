@@ -4,7 +4,7 @@ project:
 
 data:
   # Replace with a controlled-access local path. Never commit patient images.
-  manifest: data/manifest.example.csv
+  manifest: /path/to/controlled/manifest.csv
   fixation_files:
     reader_group_subspecialist: data/private/neo/expertise/Expert/*_fixations.csv
     reader_group_general_radiologist: data/private/neo/expertise/General/*_fixations.csv

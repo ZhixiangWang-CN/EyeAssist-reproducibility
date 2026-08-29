@@ -10,7 +10,6 @@ htmlcov/
 .venv/
 .DS_Store
 outputs/*
-!outputs/.gitkeep
 data/derived/
 data/private/
 data/raw/

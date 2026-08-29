@@ -7,7 +7,7 @@
 Code, configuration and audit trails for the EyeAssist analyses described in the accompanying
 Nature Machine Intelligence manuscript.
 
-[Quick start](#quick-start) · [Analysis map](#analysis-map) · [Data access](#data-access) · [Datasheet](DATASHEET.md) · [Croissant](croissant.json)
+[Quick start](#quick-start) · [Analysis map](#analysis-map) · [Data access](#data-access)
 
 </div>
 
@@ -104,9 +104,8 @@ python scripts/17_saliency_case_cluster_bootstrap.py \
 ```
 
 The detailed claim-to-code trace is in [docs/METHODS_TO_CODE.md](docs/METHODS_TO_CODE.md).
-The dataset description is provided as a [datasheet](DATASHEET.md) and machine-readable
-[Croissant metadata](croissant.json). The inferential families and interpretation rules are frozen
-in the [final analysis specification](FINAL_ANALYSIS_SPECIFICATION.md).
+The inferential families and interpretation rules are frozen in the
+[final analysis specification](FINAL_ANALYSIS_SPECIFICATION.md).
 
 ## ResNet-50 training and testing
 
@@ -212,18 +211,18 @@ See [docs/DATA_SCHEMA.md](docs/DATA_SCHEMA.md) for required fields and QC proven
 ```text
 .
 ├── configs/                 # versioned analysis settings
-├── data/                    # example manifest; controlled data are git-ignored
 ├── docs/                    # data schema and methods-to-code mapping
 ├── examples/                # data-free end-to-end smoke test
 ├── external/gazevalm/       # executable public-cohort analysis and data-free tests
 ├── scripts/                 # ordered analysis entry points
 ├── src/eyeassist/           # reusable implementation
-├── tests/                   # deterministic standard-library unit tests
-└── outputs/                 # locally generated artifacts; intentionally not committed
+└── tests/                   # deterministic standard-library unit tests
 ```
 
-The repository distributes source code, configurations and tests. It does not distribute
-EyeAssist predictions, fitted-model outputs or derived result tables.
+The repository distributes source code, configurations, tests and operating documentation only.
+It contains no images, gaze records, case manifests, clinical tables, predictions, checkpoints,
+fitted-model outputs or derived numerical result files. Runtime inputs and outputs remain outside
+the repository.
 
 ## Citation
 
