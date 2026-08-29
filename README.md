@@ -162,6 +162,15 @@ python scripts/16_classification_fixed_specificity.py \
   --output outputs/classifier/fixed_specificity.json
 ```
 
+The analysis inputs remain local and are not distributed with this repository. The AUROC audit
+script reads the author workbook's `per_case` and `runs` sheets. The fixed-specificity script reads
+a normalized CSV containing `run`, `case`, `y_true`, `image_only_last`,
+`generalist_gaze_last`, `cold_read_gaze_last` and `informed_gaze_last`. The locked conversion is
+`y_true(1=异常)` to `y_true`, `image_only_prob` to `image_only_last`, `generalist_gaze_prob`
+to `generalist_gaze_last`, `cold_read_gaze_prob` to `cold_read_gaze_last` and
+`informed_gaze_prob` to `informed_gaze_last`. This schema description documents the conversion
+only; neither the workbook nor the CSV is included in the public release.
+
 Run the all-three-of-five subspecialist subgroup sensitivity from authorized fixation inputs:
 
 ```bash

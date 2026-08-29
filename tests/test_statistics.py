@@ -14,6 +14,16 @@ class StatisticsTests(unittest.TestCase):
         self.assertEqual(mean, 1.0)
         self.assertTrue(np.isclose(p, 2 / 128))
 
+    def test_exact_sign_permutation_omits_zero_differences(self):
+        mean, p = exact_sign_permutation(np.array([1.0, 1.0, 0.0]))
+        self.assertEqual(mean, 1.0)
+        self.assertEqual(p, 0.5)
+
+    def test_exact_sign_permutation_all_zero(self):
+        mean, p = exact_sign_permutation(np.zeros(4))
+        self.assertEqual(mean, 0.0)
+        self.assertEqual(p, 1.0)
+
     def test_paired_bootstrap_is_reproducible(self):
         first = np.array([2.0, 3.0, 4.0])
         second = np.array([1.0, 1.0, 1.0])

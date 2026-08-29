@@ -41,9 +41,14 @@ def _make_splits(args: argparse.Namespace) -> int:
         manifest_path = root / manifest_path
     manifest = read_manifest(manifest_path)
     split_config = config["splits"][args.analysis]
+    split_count = split_config.get("repeats", split_config.get("partitions"))
+    if split_count is None:
+        raise ValueError(
+            f"Split configuration for {args.analysis!r} requires 'repeats' or 'partitions'"
+        )
     splits = repeated_group_stratified_splits(
         manifest,
-        repeats=int(split_config["repeats"]),
+        repeats=int(split_count),
         test_groups=args.test_groups,
         seed=int(config["project"]["seed"]),
         group_column=config["splits"]["group_column"],

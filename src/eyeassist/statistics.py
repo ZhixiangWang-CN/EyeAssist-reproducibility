@@ -27,11 +27,12 @@ def percentile_bootstrap_mean(
 
 
 def exact_sign_permutation(values: np.ndarray) -> tuple[float, float]:
-    """Two-sided exact sign-randomization test over paired unit differences."""
+    """Two-sided exact sign-randomization test over non-zero paired differences."""
     values = np.asarray(values, dtype=float)
     values = values[np.isfinite(values)]
+    values = values[values != 0.0]
     if len(values) == 0:
-        raise ValueError("No finite values")
+        return 0.0, 1.0
     observed = abs(values.mean())
     null = np.array(
         [np.mean(values * np.asarray(signs)) for signs in product([-1.0, 1.0], repeat=len(values))]
