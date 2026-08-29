@@ -74,8 +74,8 @@ python scripts/03_density_pool_analysis.py \
 | Fixation preprocessing and density maps | `eyeassist.gaze.density_map` | unit-mass case-reader maps |
 | Session translation | `reader_offset`, `leave_one_case_out_offsets` | primary and cross-fitted reader offsets on the same case-specific manifest dimensions |
 | Alignment sensitivity | `scripts/05_alignment_sensitivity.py` | relocation and density-score point-estimate comparison on the canonical case-specific canvases; primary intervals come from the Fig. 5 case-bootstrap pipeline |
-| Saliency case-cluster inference | `scripts/17_saliency_case_cluster_bootstrap.py --source <per-case-saliency.csv>` | paired case-cluster intervals while retaining repeated test-partition appearances |
-| Saliency multi-metric and target-concentration sensitivity | `scripts/11_saliency_robustness.py` | four 4×4 metric matrices, paired contrasts and entropy/effective support |
+| Saliency case-cluster inference | `scripts/17_saliency_case_cluster_bootstrap.py --source <per-case-saliency.csv>` | repeated predictions averaged within case, followed by equal-case cluster bootstrap intervals |
+| Saliency multi-metric and target-concentration sensitivity | `scripts/11_saliency_robustness.py` | 75-case four-metric matrices from the 17 random plus one coverage-completion partition, paired contrasts and entropy/effective support |
 | EyeAssist-PE slice-stable sensitivity | `scripts/12_pe_slice_stable_sensitivity.py` | stream-eligibility audit, paired summaries and case-/reader-held-out attribution |
 | Finite-panel scoring | `held_out_configuration_scores` | case-reader pool scores |
 | Saliency metrics | `nss`, `pearson_cc`, `similarity`, `kl_divergence` | paired metric table |
@@ -92,7 +92,9 @@ python scripts/03_density_pool_analysis.py \
 
 The saliency case-cluster input schema is `case`, `trained_on`, `scored_against`,
 `metric`, `mean` and `appearances`. The case-level table is a derived controlled-data
-output and is not distributed. With an authorized local table, run:
+output and is not distributed. The primary analysis gives every case equal weight;
+the script also retains the appearance-weighted result as a sensitivity analysis.
+With an authorized local table, run:
 
 ```bash
 python scripts/17_saliency_case_cluster_bootstrap.py \

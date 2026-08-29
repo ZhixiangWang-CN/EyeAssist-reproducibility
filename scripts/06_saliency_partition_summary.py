@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Summarize saliency-transfer results at the unique-partition level.
 
-The packaged experiment contains three execution records for each of 17 case
-partitions. This script verifies that nesting, averages executions within a
-partition, and bootstraps the 17 partition means rather than treating all 51
-records as independent partitions.
+The original experiment contains three execution records for each of 17 random
+case partitions. This script verifies that nesting and summarizes that original
+partition-level audit. The submission's primary uncertainty analysis, including
+the coverage-completion partition and all 75 cases, is implemented in
+``17_saliency_case_cluster_bootstrap.py``.
 """
 
 from __future__ import annotations
@@ -16,7 +17,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 
 CONTRASTS = {
     "session_second_target": ("pre_report", "post_report"),

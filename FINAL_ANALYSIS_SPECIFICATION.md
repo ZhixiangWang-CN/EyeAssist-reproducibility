@@ -14,7 +14,7 @@ Eight reader-group behavioural contrasts form one Benjamini-Hochberg family. Spa
 
 ## Computational comparisons
 
-Fixed-model scoring changes only the gaze reference. Saliency transfer changes only the gaze training target within a shared partition and training schedule; uncertainty is clustered over the 72 cases represented in the retained held-out predictions while retaining repeated partition appearances. Classification compares four shared-split arms and reports AUROC, PR-AUC, fixed-threshold operating metrics and sensitivity at 80% specificity. Repeated overlapping splits are not independent inference units; classification uncertainty is clustered by the 75 unique cases while retaining all arms and split membership.
+Fixed-model scoring changes only the gaze reference. Saliency transfer changes only the gaze training target within a shared partition and training schedule. Seventeen random partitions and one coverage-completion partition provide held-out predictions for all 75 cases; repeated predictions are averaged within case before equal-case cluster bootstrap inference. Classification compares four shared-split arms and reports AUROC, PR-AUC, fixed-threshold operating metrics and sensitivity at 80% specificity. Repeated overlapping splits are not independent inference units; classification uncertainty is clustered by the 75 unique cases while retaining all arms and split membership.
 
 ## GazeVaLM task analysis
 

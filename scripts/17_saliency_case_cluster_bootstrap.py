@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Case-cluster bootstrap for stored saliency-transfer predictions.
+"""Equal-case cluster bootstrap for stored saliency-transfer predictions.
 
 The input is a data-derived local table and is not distributed with the code
 release. It contains one row per case, training target, evaluation target and
 metric. ``mean`` averages the stored execution-level predictions for that
-case, and ``appearances`` records how many predictions contributed. Resampling
-cases while retaining this weight preserves the original equal-partition
-point estimand and accounts for cases appearing in multiple test partitions.
+case, and ``appearances`` records how many predictions contributed. Repeated
+held-out predictions are first averaged within case; cases are then sampled
+with equal weight. An appearance-weighted summary is retained as a sensitivity
+analysis of the original equal-partition estimand.
 """
 
 from __future__ import annotations
@@ -91,8 +92,8 @@ def analyse(
             case_weights = weights[matched_train].to_numpy(dtype=float)
             draws = difference[sampled]
             draw_weights = case_weights[sampled]
-            weighted_draws = np.sum(draws * draw_weights, axis=1) / np.sum(draw_weights, axis=1)
             equal_case_draws = draws.mean(axis=1)
+            weighted_draws = np.sum(draws * draw_weights, axis=1) / np.sum(draw_weights, axis=1)
 
             rows.append(
                 {
@@ -100,6 +101,9 @@ def analyse(
                     "contrast": contrast,
                     "evaluation_target": target,
                     "n_case_clusters": len(cases),
+                    "primary_point": float(difference.mean()),
+                    "primary_ci_low": float(np.percentile(equal_case_draws, 2.5)),
+                    "primary_ci_high": float(np.percentile(equal_case_draws, 97.5)),
                     "weighted_point": float(np.average(difference, weights=case_weights)),
                     "weighted_ci_low": float(np.percentile(weighted_draws, 2.5)),
                     "weighted_ci_high": float(np.percentile(weighted_draws, 97.5)),
@@ -133,7 +137,8 @@ def main() -> None:
             "case_clusters": int(result["n_case_clusters"].iloc[0]),
             "bootstrap_resamples": args.bootstrap,
             "bootstrap_seed": args.seed,
-            "primary_estimand": "case-cluster bootstrap with retained appearance weights",
+            "primary_estimand": "equal-case mean with case-cluster bootstrap",
+            "sensitivity_estimand": "appearance-weighted mean with case-cluster bootstrap",
         }
         args.metadata.parent.mkdir(parents=True, exist_ok=True)
         args.metadata.write_text(json.dumps(payload, indent=2) + "\n")

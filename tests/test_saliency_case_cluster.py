@@ -13,7 +13,7 @@ SPEC.loader.exec_module(MODULE)
 
 
 class SaliencyCaseClusterTests(unittest.TestCase):
-    def test_weighted_case_cluster_bootstrap_is_reproducible(self):
+    def test_equal_case_cluster_bootstrap_is_reproducible(self):
         rows = []
         targets = {value for contrast in MODULE.CONTRASTS.values() for value in contrast}
         for case, appearances in [("a", 3), ("b", 6), ("c", 3)]:
@@ -37,6 +37,8 @@ class SaliencyCaseClusterTests(unittest.TestCase):
         first = MODULE.analyse(frame, n_bootstrap=100, seed=7)
         second = MODULE.analyse(frame, n_bootstrap=100, seed=7)
         pd.testing.assert_frame_equal(first, second)
+        self.assertTrue(np.allclose(first["primary_point"], 0.1))
+        self.assertTrue(np.allclose(first["equal_case_point"], 0.1))
         self.assertTrue(np.allclose(first["weighted_point"], 0.1))
 
 

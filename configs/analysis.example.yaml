@@ -62,11 +62,13 @@ resampling:
     n_resamples: 5000
     seed: 20260822
     confidence: 0.95
-  saliency_partition_bootstrap:
-    unit: partition
+  saliency_case_cluster_bootstrap:
+    unit: case
     n_resamples: 20000
     seed: 20260824
     confidence: 0.95
+    repeated_prediction_rule: average_within_case
+    case_weighting: equal
   classifier_case_cluster_bootstrap:
     unit: case
     n_resamples: 20000
@@ -86,13 +88,17 @@ splits:
     train_cases: 60
     test_cases: 15
   saliency:
-    partitions: 17
+    partitions: 18
+    random_partitions: 17
+    coverage_completion_partitions: 1
     executions_per_partition: 3
     train_fraction: 0.60
     validation_fraction: 0.15
     test_fraction: 0.25
     test_cases: 19
-    partition_seeds: [1235, 1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 1244, 1245, 1246, 1247, 1248, 1249, 1250, 1251]
+    partition_seeds: [1235, 1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 1244, 1245, 1246, 1247, 1248, 1249, 1250, 1251, 20260829]
+    coverage_completion_cases: [10, 54, 60]
+    coverage_completion_execution_seeds: [20260829, 20260830, 20260831]
 
 classifier:
   architecture: resnet50
@@ -127,11 +133,12 @@ saliency:
   learning_rate: 0.0001
   optimizer: adam
   scheduler: cosine_annealing
-  early_stopping_patience: 15
+  checkpoint_rule: final_epoch
+  early_stopping: false
   loss:
     kl_weight: 1.0
     correlation_weight: 1.0
     kl_direction: target_to_model
   max_epochs: 60
-  partition_seeds: [1235, 1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 1244, 1245, 1246, 1247, 1248, 1249, 1250, 1251]
+  partition_seeds: [1235, 1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 1244, 1245, 1246, 1247, 1248, 1249, 1250, 1251, 20260829]
   executions_per_partition: 3

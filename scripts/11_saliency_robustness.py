@@ -6,8 +6,9 @@ case-dimension manifest. Generated summaries are written to ``--output-dir``.
 
 Analyses
 --------
-1. Reconstruct the complete 4 x 4 NSS/CC/KL/sAUC matrices at the unique-
-   partition level (three executions averaged inside each of 17 partitions).
+1. Reconstruct the complete 4 x 4 NSS/CC/KL/sAUC matrices from 17 random
+   partitions plus one coverage-completion partition. Repeated predictions are
+   averaged within case before the 75-case matrix is summarized.
 2. Compute paired partition-bootstrap intervals for every diagonal-versus-
    off-diagonal contrast at a fixed evaluation target.
 3. Reconstruct duration-weighted 256 x 256 target densities from the raw
@@ -21,19 +22,17 @@ Analyses
 from __future__ import annotations
 
 import argparse
-import csv
 import json
-import math
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-
 OUT = Path("outputs/saliency_robustness")
 DATA = Path(".")
 MANIFEST = Path("manifest.csv")
+COMPLETION_DATA = Path(".")
 
 REFS = ["expert_consensus", "generalist_consensus", "pre_report", "post_report"]
 LABELS = {
@@ -90,14 +89,32 @@ def transfer_audit() -> dict:
     if any(len(shard["runs"]) != 17 for shard in shards):
         raise ValueError("Expected 17 partitions in every execution shard")
 
+    completion_runs = [
+        json.loads((COMPLETION_DATA / f"execution{i}.json").read_text())
+        for i in (1, 2, 3)
+    ]
+    if any(len(run["test_cases"]) != 19 for run in completion_runs):
+        raise ValueError("Coverage-completion executions must contain 19 test cases")
+    if len({tuple(run["test_cases"]) for run in completion_runs}) != 1:
+        raise ValueError("Coverage-completion executions do not share the test set")
+
+    partition_groups = [
+        [shard["runs"][partition] for shard in shards]
+        for partition in range(17)
+    ]
+    partition_groups.append(completion_runs)
+
     partition_rows = []
     contrast_rows = []
     case_values: dict[tuple[str, str, str, str], list[float]] = defaultdict(list)
 
-    for partition in range(17):
-        runs = [shard["runs"][partition] for shard in shards]
-        if len({run["seed"] for run in runs}) != 1:
+    for partition, runs in enumerate(partition_groups):
+        split_seeds = {
+            int(run.get("seed", run.get("config", {}).get("split_seed"))) for run in runs
+        }
+        if len(split_seeds) != 1:
             raise ValueError(f"Seed mismatch in partition {partition + 1}")
+        split_seed = next(iter(split_seeds))
         if len({tuple(run["test_cases"]) for run in runs}) != 1:
             raise ValueError(f"Test-case mismatch in partition {partition + 1}")
 
@@ -107,7 +124,7 @@ def transfer_audit() -> dict:
                     execution_means = [mean_metric(run, trained, target, metric) for run in runs]
                     partition_rows.append({
                         "partition": partition + 1,
-                        "seed": runs[0]["seed"],
+                        "seed": split_seed,
                         "trained_on": trained,
                         "scored_against": target,
                         "metric": metric,
@@ -137,17 +154,28 @@ def transfer_audit() -> dict:
         }
         for key, values in sorted(case_values.items())
     ]
-    pd.DataFrame(case_rows).to_csv(OUT / "2026-08-24_saliency_per_case_matrix.csv", index=False)
+    case_frame = pd.DataFrame(case_rows)
+    if case_frame["case"].nunique() != 75:
+        raise ValueError(
+            f"Expected held-out predictions for 75 cases, found {case_frame['case'].nunique()}"
+        )
+    case_frame.to_csv(OUT / "2026-08-24_saliency_per_case_matrix.csv", index=False)
 
     matrices = {}
     column_best = {}
     spans = {}
     for metric in METRICS:
         subset = part[part.metric == metric]
+        case_subset = case_frame[case_frame.metric == metric]
         matrix = []
         for trained in REFS:
             matrix.append([
-                float(subset[(subset.trained_on == trained) & (subset.scored_against == target)].value.mean())
+                float(
+                    case_subset[
+                        (case_subset.trained_on == trained)
+                        & (case_subset.scored_against == target)
+                    ]["mean"].mean()
+                )
                 for target in REFS
             ])
         matrices[metric] = matrix
@@ -200,9 +228,10 @@ def transfer_audit() -> dict:
     pd.DataFrame(axis_rows).to_csv(OUT / "2026-08-24_saliency_axis_contrasts.csv", index=False)
 
     return {
-        "n_partitions": 17,
+        "n_partitions": len(partition_groups),
         "executions_per_partition": 3,
-        "n_fitted_models": 204,
+        "n_fitted_models": len(partition_groups) * 3 * 4,
+        "n_held_out_cases": int(case_frame["case"].nunique()),
         "matrices": matrices,
         "column_best_training_source": column_best,
         "within_column_spans": spans,
@@ -437,6 +466,7 @@ def target_entropy_audit() -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execution-shards-dir", type=Path, required=True)
+    parser.add_argument("--coverage-completion-dir", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--subspecialist-fixations", type=Path, required=True)
     parser.add_argument("--general-radiologist-fixations", type=Path, required=True)
@@ -448,9 +478,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    global OUT, DATA, MANIFEST, FIXATION_SOURCES
+    global OUT, DATA, COMPLETION_DATA, MANIFEST, FIXATION_SOURCES
     OUT = args.output_dir
     DATA = args.execution_shards_dir
+    COMPLETION_DATA = args.coverage_completion_dir
     MANIFEST = args.manifest
     FIXATION_SOURCES = {
         "expert_consensus": args.subspecialist_fixations,
