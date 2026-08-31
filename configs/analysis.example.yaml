@@ -62,18 +62,20 @@ resampling:
     n_resamples: 5000
     seed: 20260822
     confidence: 0.95
-  saliency_case_cluster_bootstrap:
-    unit: case
+  saliency_patient_cluster_bootstrap:
+    unit: patient
     n_resamples: 20000
-    seed: 20260824
+    seed: 20260830
     confidence: 0.95
     repeated_prediction_rule: average_within_case
-    case_weighting: equal
-  classifier_case_cluster_bootstrap:
-    unit: case
+    patient_weighting: equal
+    retention_rule: all_patient_records_held_out_together
+  classifier_patient_cluster_bootstrap:
+    unit: patient
     n_resamples: 20000
-    seed: 20260824
+    seed: 20260830
     confidence: 0.95
+    retention_rule: all_patient_records_held_out_together
   classifier_fixed_specificity_case_cluster_bootstrap:
     unit: case
     n_resamples: 20000

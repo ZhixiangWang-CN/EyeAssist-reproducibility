@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Equal-case cluster bootstrap for stored saliency-transfer predictions.
+"""Case- or patient-cluster bootstrap for saliency-transfer predictions.
 
 The input is a data-derived local table and is not distributed with the code
 release. It contains one row per case, training target, evaluation target and
 metric. ``mean`` averages the stored execution-level predictions for that
 case, and ``appearances`` records how many predictions contributed. Repeated
-held-out predictions are first averaged within case; cases are then sampled
-with equal weight. An appearance-weighted summary is retained as a sensitivity
-analysis of the original equal-partition estimand.
+held-out predictions are first averaged within case. With ``--patient-map``,
+case-level contrasts are averaged within patient and patients are sampled with
+equal weight. The local source table must already have applied the manuscript's
+all-records-held-out retention rule; no study data are distributed here.
 """
 
 from __future__ import annotations
@@ -63,12 +64,33 @@ def validate(frame: pd.DataFrame) -> list[object]:
 def analyse(
     frame: pd.DataFrame,
     *,
+    patient_map: pd.DataFrame | None = None,
     n_bootstrap: int = 20_000,
-    seed: int = 20260824,
+    seed: int = 20260830,
 ) -> pd.DataFrame:
     cases = validate(frame)
+    case_to_cluster = {case: str(case) for case in cases}
+    cluster_unit = "case"
+    if patient_map is not None:
+        required = {"case", "patient"}
+        missing = required.difference(patient_map.columns)
+        if missing:
+            raise ValueError(f"Patient map is missing columns: {sorted(missing)}")
+        if patient_map["case"].duplicated().any():
+            raise ValueError("Patient map contains duplicate case rows")
+        local_map = {
+            str(case): str(patient)
+            for case, patient in patient_map[["case", "patient"]].itertuples(index=False)
+        }
+        absent = sorted(set(map(str, cases)).difference(local_map), key=_case_sort_key)
+        if absent:
+            raise ValueError(f"Patient map does not cover cases: {absent}")
+        case_to_cluster = {case: local_map[str(case)] for case in cases}
+        cluster_unit = "patient"
+
+    clusters = sorted(set(case_to_cluster.values()), key=_case_sort_key)
     rng = np.random.default_rng(seed)
-    sampled = rng.integers(0, len(cases), size=(n_bootstrap, len(cases)))
+    sampled = rng.integers(0, len(clusters), size=(n_bootstrap, len(clusters)))
     rows: list[dict[str, object]] = []
 
     for metric in METRICS:
@@ -90,9 +112,29 @@ def analyse(
             else:
                 difference = values[matched_train].to_numpy() - values[alternative_train].to_numpy()
             case_weights = weights[matched_train].to_numpy(dtype=float)
-            draws = difference[sampled]
-            draw_weights = case_weights[sampled]
-            equal_case_draws = draws.mean(axis=1)
+            case_difference = pd.Series(difference, index=[str(case) for case in cases])
+            case_appearance = pd.Series(case_weights, index=[str(case) for case in cases])
+            cluster_difference = np.asarray(
+                [
+                    case_difference[
+                        [str(case) for case in cases if case_to_cluster[case] == cluster]
+                    ].mean()
+                    for cluster in clusters
+                ],
+                dtype=float,
+            )
+            cluster_appearance = np.asarray(
+                [
+                    case_appearance[
+                        [str(case) for case in cases if case_to_cluster[case] == cluster]
+                    ].sum()
+                    for cluster in clusters
+                ],
+                dtype=float,
+            )
+            draws = cluster_difference[sampled]
+            draw_weights = cluster_appearance[sampled]
+            equal_cluster_draws = draws.mean(axis=1)
             weighted_draws = np.sum(draws * draw_weights, axis=1) / np.sum(draw_weights, axis=1)
 
             rows.append(
@@ -100,19 +142,21 @@ def analyse(
                     "metric": metric,
                     "contrast": contrast,
                     "evaluation_target": target,
-                    "n_case_clusters": len(cases),
-                    "primary_point": float(difference.mean()),
-                    "primary_ci_low": float(np.percentile(equal_case_draws, 2.5)),
-                    "primary_ci_high": float(np.percentile(equal_case_draws, 97.5)),
-                    "weighted_point": float(np.average(difference, weights=case_weights)),
+                    "cluster_unit": cluster_unit,
+                    "n_clusters": len(clusters),
+                    "n_case_records": len(cases),
+                    "primary_point": float(cluster_difference.mean()),
+                    "primary_ci_low": float(np.percentile(equal_cluster_draws, 2.5)),
+                    "primary_ci_high": float(np.percentile(equal_cluster_draws, 97.5)),
+                    "weighted_point": float(np.average(cluster_difference, weights=cluster_appearance)),
                     "weighted_ci_low": float(np.percentile(weighted_draws, 2.5)),
                     "weighted_ci_high": float(np.percentile(weighted_draws, 97.5)),
-                    "equal_case_point": float(difference.mean()),
-                    "equal_case_ci_low": float(np.percentile(equal_case_draws, 2.5)),
-                    "equal_case_ci_high": float(np.percentile(equal_case_draws, 97.5)),
-                    "positive_case_clusters": int((difference > 0).sum()),
-                    "zero_case_clusters": int((difference == 0).sum()),
-                    "negative_case_clusters": int((difference < 0).sum()),
+                    "equal_cluster_point": float(cluster_difference.mean()),
+                    "equal_cluster_ci_low": float(np.percentile(equal_cluster_draws, 2.5)),
+                    "equal_cluster_ci_high": float(np.percentile(equal_cluster_draws, 97.5)),
+                    "positive_clusters": int((cluster_difference > 0).sum()),
+                    "zero_clusters": int((cluster_difference == 0).sum()),
+                    "negative_clusters": int((cluster_difference < 0).sum()),
                 }
             )
     return pd.DataFrame(rows)
@@ -121,24 +165,37 @@ def analyse(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True, help="Local per-case saliency CSV")
+    parser.add_argument(
+        "--patient-map",
+        type=Path,
+        help="Optional local CSV with case and patient columns for patient-cluster inference",
+    )
     parser.add_argument("--output", type=Path, required=True, help="Output contrast CSV")
     parser.add_argument("--metadata", type=Path, help="Optional JSON audit record")
     parser.add_argument("--bootstrap", type=int, default=20_000)
-    parser.add_argument("--seed", type=int, default=20260824)
+    parser.add_argument("--seed", type=int, default=20260830)
     args = parser.parse_args()
 
     frame = pd.read_csv(args.source)
-    result = analyse(frame, n_bootstrap=args.bootstrap, seed=args.seed)
+    patient_map = pd.read_csv(args.patient_map, dtype=str) if args.patient_map else None
+    result = analyse(
+        frame,
+        patient_map=patient_map,
+        n_bootstrap=args.bootstrap,
+        seed=args.seed,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     result.to_csv(args.output, index=False)
     if args.metadata:
         payload = {
             "source": str(args.source),
-            "case_clusters": int(result["n_case_clusters"].iloc[0]),
+            "cluster_unit": str(result["cluster_unit"].iloc[0]),
+            "clusters": int(result["n_clusters"].iloc[0]),
+            "case_records": int(result["n_case_records"].iloc[0]),
             "bootstrap_resamples": args.bootstrap,
             "bootstrap_seed": args.seed,
-            "primary_estimand": "equal-case mean with case-cluster bootstrap",
-            "sensitivity_estimand": "appearance-weighted mean with case-cluster bootstrap",
+            "primary_estimand": "equal-cluster mean with cluster bootstrap",
+            "sensitivity_estimand": "appearance-weighted mean with cluster bootstrap",
         }
         args.metadata.parent.mkdir(parents=True, exist_ok=True)
         args.metadata.write_text(json.dumps(payload, indent=2) + "\n")
