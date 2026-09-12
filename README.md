@@ -22,7 +22,7 @@ repository implements the manuscript's auditable analysis backbone:
 - reader-specific global session alignment with a case-specific-canvas leave-one-case-out sensitivity analysis;
 - held-out matched, half-mixed, opposite and all-record reference pools;
 - NSS, Pearson correlation, similarity, KL divergence and predictive log score;
-- reader-, case- and split-level resampling with an explicit sampling unit;
+- reader-, image-record-, patient- and split-level resampling with an explicit sampling unit;
 - reader-group entropy and 10×10 coverage reconstructed from fixation CSVs;
 - four-metric saliency-transfer robustness and target-entropy/effective-support sensitivity;
 - all-reader EyeAssist-PE slice-stable session attribution after immediate slice transitions are excluded;
@@ -33,8 +33,8 @@ repository implements the manuscript's auditable analysis backbone:
 - leakage-safe ResNet-50 training, checkpoint selection and held-out evaluation entry points;
 - deterministic synthetic tests that require no clinical data.
 
-Case-level bootstrap inference retains all appearances of a sampled case and all paired model arms
-together.
+Patient-cluster bootstrap inference retains all records from a sampled patient and all paired model
+arms together.
 
 ## Quick start
 
@@ -71,17 +71,17 @@ python scripts/03_density_pool_analysis.py \
 
 | Manuscript component | Repository implementation | Primary output |
 |---|---|---|
-| Fixation preprocessing and density maps | `eyeassist.gaze.density_map` | unit-mass case-reader maps |
+| Fixation preprocessing and density maps | `eyeassist.gaze.density_map` | unit-mass image-record--reader maps |
 | Session translation | `reader_offset`, `leave_one_case_out_offsets` | primary and cross-fitted reader offsets on the same case-specific manifest dimensions |
 | Alignment sensitivity | `scripts/05_alignment_sensitivity.py` | relocation and density-score point-estimate comparison on the canonical case-specific canvases; primary intervals come from the Fig. 5 case-bootstrap pipeline |
 | Saliency patient-cluster inference | `scripts/17_saliency_case_cluster_bootstrap.py --source <per-case-saliency.csv> --patient-map <case-to-patient.csv>` | repeated predictions averaged within case and then within patient, followed by equal-patient cluster-bootstrap intervals |
 | Saliency multi-metric and target-concentration sensitivity | `scripts/11_saliency_robustness.py` | 75-case four-metric matrices from the 17 random plus one coverage-completion partition, paired contrasts and entropy/effective support |
 | EyeAssist-PE slice-stable sensitivity | `scripts/12_pe_slice_stable_sensitivity.py` | stream-eligibility audit, paired summaries and case-/reader-held-out attribution |
-| Finite-panel scoring | `held_out_configuration_scores` | case-reader pool scores |
+| Finite-panel scoring | `held_out_configuration_scores` | image-record--reader pool scores |
 | Saliency metrics | `nss`, `pearson_cc`, `similarity`, `kl_divergence` | paired metric table |
 | Reader/case inference | `eyeassist.statistics` | point estimates and intervals |
 | Repeated internal evaluation | `eyeassist.splits` | configurable group-held-out split manifest |
-| Classification results | `scripts/10_case_cluster_auc.py --source <case-level-workbook.xlsx> --patient-map <case-to-patient.csv>` | all-records-held-out retention, mean within-split AUROC and paired patient-cluster intervals across shared runs |
+| Classification results | `scripts/10_case_cluster_auc.py --source <image-record-level-workbook.xlsx> --patient-map <image-record-to-patient.csv>` | all-records-held-out retention, mean within-split AUROC and paired patient-cluster intervals across shared runs |
 | Classification at fixed specificity | `scripts/16_classification_fixed_specificity.py` | mean split sensitivity at a declared specificity with paired case-cluster intervals |
 | Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
 | Gaze-supervised classification | `make_classifier`, `attention_kl` | CE + 0.5 KL(target || layer4 CAM), with CAM computed for the true class |

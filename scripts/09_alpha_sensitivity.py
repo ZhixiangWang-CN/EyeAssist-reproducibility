@@ -153,7 +153,7 @@ def main() -> int:
 
         output["results"][str(alpha)] = {
             "reader_group": summarize(reader_group_rows),
-            "session_condition": summarize(session_rows),
+            "session_contrast": summarize(session_rows),
         }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

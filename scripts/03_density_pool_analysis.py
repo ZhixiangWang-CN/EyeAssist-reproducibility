@@ -2,7 +2,7 @@
 """Configuration-driven held-out gaze-pool analysis.
 
 This script expects one canonical fixation CSV per reader and a case manifest.
-It produces case-reader-level matched/half-mixed/opposite/all-record scores so
+It produces image-record--reader-level matched/half-mixed/opposite/all-record scores so
 all manuscript summaries can be regenerated from an auditable intermediate.
 """
 
@@ -25,11 +25,16 @@ from eyeassist.statistics import percentile_bootstrap_mean
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/analysis.yaml")
-    parser.add_argument("--axis", choices=["reader_group", "session_condition"], required=True)
+    parser.add_argument(
+        "--axis",
+        choices=["reader_group", "session_contrast", "session_condition"],
+        required=True,
+        help="Comparison axis; session_condition is retained as a legacy alias",
+    )
     parser.add_argument("--output", required=True)
     parser.add_argument(
         "--summary-output",
-        help="Optional JSON path for case-level contrast estimates and bootstrap intervals",
+        help="Optional JSON path for patient-level contrast estimates and bootstrap intervals",
     )
     args = parser.parse_args()
 
@@ -39,9 +44,12 @@ def main() -> int:
     if not manifest_path.is_absolute():
         manifest_path = root / manifest_path
     manifest = read_manifest(manifest_path).set_index("case_id")
+    if "patient_id" not in manifest.columns or manifest["patient_id"].isna().any():
+        raise ValueError("The manifest must contain a complete patient_id column")
     columns = config["fixation_columns"]
 
-    if args.axis == "reader_group":
+    axis = "session_contrast" if args.axis == "session_condition" else args.axis
+    if axis == "reader_group":
         sources = {
             "subspecialist": config["data"]["fixation_files"]["reader_group_subspecialist"],
             "general_radiologist": config["data"]["fixation_files"]["reader_group_general_radiologist"],
@@ -69,7 +77,11 @@ def main() -> int:
         raise FileNotFoundError("No fixation CSV files matched the configured patterns")
 
     density_config = config["density"]
-    pool_config = config["pool_comparison"][args.axis]
+    pool_config = config["pool_comparison"].get(axis)
+    if pool_config is None and axis == "session_contrast":
+        pool_config = config["pool_comparison"]["session_condition"]
+    if pool_config is None:
+        raise KeyError(f"Missing pool configuration for {axis}")
     rows = []
     for case_id, meta in manifest.iterrows():
         case_tables = {
@@ -109,6 +121,7 @@ def main() -> int:
             rows.append(
                 {
                     "case_id": case_id,
+                    "patient_id": str(meta.patient_id),
                     "target_reader": target_reader,
                     "target_identity": identities[target_reader],
                     "target_state": states[target_reader],
@@ -120,15 +133,29 @@ def main() -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     scores = pd.DataFrame(rows)
     scores.to_csv(output, index=False)
-    resampling = config["resampling"]["finite_panel_case_bootstrap"]
-    case_values = scores.groupby("case_id", sort=True)[
+    resampling = config["resampling"].get(
+        "finite_panel_patient_cluster_bootstrap",
+        config["resampling"].get("finite_panel_case_bootstrap"),
+    )
+    if resampling is None:
+        raise KeyError("Missing finite-panel patient-cluster bootstrap configuration")
+    contrast_columns = [
+        "matched_minus_half_mixed",
+        "matched_minus_opposite",
+        "matched_minus_all_records",
+    ]
+    record_values = scores.groupby(["patient_id", "case_id"], sort=True)[
+        contrast_columns
+    ].mean()
+    patient_values = record_values.groupby("patient_id", sort=True)[
         ["matched_minus_half_mixed", "matched_minus_opposite", "matched_minus_all_records"]
     ].mean()
-    case_values["all_records_minus_matched"] = -case_values["matched_minus_all_records"]
+    patient_values["all_records_minus_matched"] = -patient_values["matched_minus_all_records"]
     summary = {
-        "axis": args.axis,
+        "axis": axis,
         "unit": str(resampling["unit"]),
-        "n_cases": int(len(case_values)),
+        "n_image_records": int(len(record_values)),
+        "n_patients": int(len(patient_values)),
         "n_resamples": int(resampling["n_resamples"]),
         "seed": int(resampling["seed"]),
         "confidence": float(resampling["confidence"]),
@@ -140,7 +167,7 @@ def main() -> int:
         "all_records_minus_matched",
     ):
         estimate, low, high = percentile_bootstrap_mean(
-            case_values[contrast].to_numpy(),
+            patient_values[contrast].to_numpy(),
             n_resamples=int(resampling["n_resamples"]),
             seed=int(resampling["seed"]),
             confidence=float(resampling["confidence"]),
@@ -157,8 +184,8 @@ def main() -> int:
     )
     summary_output.parent.mkdir(parents=True, exist_ok=True)
     summary_output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(rows):,} held-out case-reader rows to {output}")
-    print(f"Wrote case-bootstrap summary to {summary_output}")
+    print(f"Wrote {len(rows):,} held-out image-record--reader rows to {output}")
+    print(f"Wrote patient-cluster bootstrap summary to {summary_output}")
     return 0
 
 

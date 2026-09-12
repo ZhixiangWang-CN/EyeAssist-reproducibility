@@ -9,9 +9,9 @@ locked study record.
 | Case-specific fixation density | `src/eyeassist/gaze.py::density_map` | fourfold downsampling; configurable Gaussian sigma; unit mass; uniform smoothing mass | implemented |
 | Equal member contribution | `equal_reader_pool` | normalize each member map, then average | implemented |
 | Held-out target reader/record | `pooling.py::held_out_configuration_scores` | target excluded from every pool | implemented/tested |
-| Reader-group matched pool | same | 4 same-state maps after one target reader is held out | implemented |
-| Reader-group half-mixed pool | same | 2 target-state + 2 off-state maps | implemented |
-| Reader-group opposite pool | same | 4 off-state maps | implemented |
+| Reader-group matched pool | same | 4 matched-group maps after one target reader is held out | implemented |
+| Reader-group half-mixed pool | same | 2 matched + 2 opposite-group maps | implemented |
+| Reader-group opposite pool | same | 4 opposite-group maps | implemented |
 | Session matched/half/opposite | same | 2; 1+1; 2 recording maps | implemented |
 | Predictive log score | `gaze.py::fixation_log_score` | mean log2 probability at held-out fixations | implemented |
 | Session translation | `reader_offset`, `leave_one_case_out_offsets` | duration-weighted case CoM; cross-fitted by held-out case; both offset estimators and the primary density analysis read the same case-specific dimensions from the manifest; the sensitivity script reports point estimates only, so primary intervals remain governed by the single Fig. 5 case-bootstrap pipeline | implemented; real-data sensitivity reconstructed |
@@ -21,7 +21,7 @@ locked study record.
 | Saliency target concentration | `scripts/11_saliency_robustness.py` | Shannon entropy and Shannon/Simpson effective support; equal-reader and duration pooling; 0%/1% floors | implemented/reconstructed |
 | PE slice-stable sensitivity | `scripts/12_pe_slice_stable_sensitivity.py` | maximal unchanged-slice runs; 2/3/5-row definitions; fixed-C logistic regression; LOCO/LORO | implemented/reconstructed |
 | Reader-level exact sign test | `statistics.py::exact_sign_permutation` | inference unit is reader | implemented/tested |
-| Finite-panel case bootstrap | `statistics.py`, `scripts/03_density_pool_analysis.py` | 2,000 case resamples; seed 20260822; case-first contrast summary | implemented/configured |
+| Finite-panel patient-cluster bootstrap | `statistics.py`, `scripts/03_density_pool_analysis.py` | records averaged within patient; 20,000 patient resamples; seed 20260830 | implemented/configured |
 | Three-of-five reader subgroup sensitivity | `scripts/15_reader_profession_sensitivity.py` | all ten three-member subspecialist subsets; equal two-reader references; case bootstrap and exact three-versus-five allocation test | implemented/reconstructed |
 | Patient/split paired bootstrap | `statistics.py`, `scripts/10_case_cluster_auc.py` | paired differences; all records from each patient retained or excluded together; repeated split appearances and all arms retained within patient cluster; seed versioned | implemented/tested |
 | Classifier repeated partitions | locally supplied case-level predictions | 50 overlapping label-stratified case splits; arms paired within split | analysis implemented/audited; local input required |

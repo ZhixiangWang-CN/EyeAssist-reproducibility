@@ -6,7 +6,7 @@ This document freezes the analysis families used in the manuscript and companion
 
 ## Finite-panel density scoring
 
-The primary family contains six declared contrasts. Four hold pool size fixed and test composition: reader-group matched versus half-mixed; reader-group matched versus opposite; session matched versus half-mixed; and session matched versus opposite. Two compare the larger all-record pool with the matched pool and are interpreted as coverage contrasts because pool size and composition change together. Scores use base-2 held-out fixation log probability, case-level averaging and case-cluster bootstrap intervals. The reader-group matched-versus-opposite contrast additionally uses the exact allocation distribution.
+The primary family contains six declared contrasts. Four hold pool size fixed and test composition: reader-group matched versus half-mixed; reader-group matched versus opposite; session matched versus half-mixed; and session matched versus opposite. Two compare the larger all-record pool with the matched pool and estimate the combined gain from additional records and broader spatial coverage because pool size and composition change together. Scores use base-2 held-out fixation log probability, with records averaged within patient before patient-cluster bootstrap inference. The reader-group matched-versus-opposite contrast additionally uses the exact allocation distribution.
 
 ## Behaviour and spatial summaries
 
