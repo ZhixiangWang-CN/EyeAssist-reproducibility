@@ -7,7 +7,7 @@
 Code, configuration and audit trails for the EyeAssist analyses described in the accompanying
 Nature Machine Intelligence manuscript.
 
-[Quick start](#quick-start) · [Analysis map](#analysis-map) · [Data access](#data-access)
+[Project page](https://zhixiangwang-cn.github.io/EyeAssist-reproducibility/) · [Quick start](#quick-start) · [Analysis map](#analysis-map) · [Data access](#data-access)
 
 </div>
 

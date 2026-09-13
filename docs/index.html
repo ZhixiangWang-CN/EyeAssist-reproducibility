@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="EyeAssist studies how reader group, task and clinical information define gaze-supervision targets in medical imaging AI.">
+  <meta property="og:title" content="The static gaze fallacy">
+  <meta property="og:description" content="Reader state shapes supervision targets in medical imaging AI.">
+  <meta property="og:image" content="assets/figure1.png">
+  <title>The static gaze fallacy | EyeAssist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="shell hero-inner">
+      <p class="venue">Nature Machine Intelligence · Manuscript</p>
+      <h1>The static gaze fallacy</h1>
+      <p class="subtitle">Reader state shapes supervision targets in medical imaging AI</p>
+      <p class="lede">EyeAssist shows that clinical gaze is not an observer-independent image label. The reader population, task and available clinical information determine the gaze distribution used for evaluation and learning.</p>
+      <nav class="actions" aria-label="Project links">
+        <a class="button primary" href="https://github.com/ZhixiangWang-CN/EyeAssist-reproducibility">Code</a>
+        <a class="button" href="https://huggingface.co/datasets/fvewa/EyeAssist">Dataset</a>
+        <span class="button disabled" aria-disabled="true">Preprint forthcoming</span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section shell first">
+      <img class="hero-figure" src="assets/figure1.png" alt="EyeAssist study design, reader and session contrasts, reference pools and computational analyses.">
+      <p class="caption"><strong>EyeAssist overview.</strong> Two paired reader studies isolate changes in reader group and reading session while retaining the same image records or volumes.</p>
+    </section>
+
+    <section class="section tint">
+      <div class="shell">
+        <p class="eyebrow">The central question</p>
+        <h2>Whose gaze is the model learning?</h2>
+        <div class="two-col">
+          <p class="big-copy">Most gaze-guided pipelines ask how gaze should enter a model. EyeAssist asks which recordings should be combined to define the supervision target.</p>
+          <p>If gaze changes with the reader group, clinical information or task, pooling across these conditions does not merely reduce noise. It creates a different target distribution. We test this with held-out readers, equal-capacity reference pools, fixed-model scoring, saliency transfer and gaze-supervised classification.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell">
+      <p class="eyebrow">Study at a glance</p>
+      <h2>Paired clinical reading settings</h2>
+      <div class="cards">
+        <article class="card teal">
+          <p class="card-tag">EyeAssist-Neo</p>
+          <p class="number">75</p>
+          <p class="card-title">neonatal-radiograph records</p>
+          <p>Ten clinical readers support a five-versus-five reader-group contrast; three readers completed paired sessions with and without clinical information.</p>
+        </article>
+        <article class="card red">
+          <p class="card-tag">EyeAssist-PE</p>
+          <p class="number">40</p>
+          <p class="card-title">CT pulmonary angiography volumes</p>
+          <p>Seven radiologists read each volume twice and judged 30-day survival, yielding a paired 3D session comparison.</p>
+        </article>
+        <article class="card navy">
+          <p class="card-tag">Public replication</p>
+          <p class="number">16</p>
+          <p class="card-title">GazeVaLM readers</p>
+          <p>A separately acquired public cohort tests whether target matching behaves consistently across diagnostic and real-versus-synthetic tasks.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section shell">
+      <p class="eyebrow">Core evidence</p>
+      <h2>Composition changes the target</h2>
+      <div class="stats">
+        <div class="stat"><strong>+0.280</strong><span>bits per fixation for reader-group matching versus the opposite group</span></div>
+        <div class="stat"><strong>91.2%</strong><span>of patients showed the reader-group effect in the same direction</span></div>
+        <div class="stat"><strong>+0.104</strong><span>bits per fixation for session matching versus the opposite session</span></div>
+        <div class="stat"><strong>0.849 → 0.925</strong><span>AUROC without gaze versus second-session gaze supervision</span></div>
+      </div>
+      <figure>
+        <img src="assets/figure5.png" alt="Fixed-capacity gaze pool comparisons, coverage gain and patient-level contrasts.">
+        <figcaption><strong>Fixed-capacity reference pools.</strong> Matching the target reader group or session improved held-out gaze prediction. Larger all-record pools also gained spatial coverage, showing why pool size and composition must be separated.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section tint">
+      <div class="shell">
+        <p class="eyebrow">Key results</p>
+        <h2>Effects extend from behaviour to models</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Analysis</th><th>Comparison</th><th>Main result</th><th>Interpretation</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Spatial gaze</td><td>Pediatric subspecialty panel vs general radiologists</td><td>159-pixel median centre-of-mass separation</td><td>Reader groups emphasized different image regions.</td></tr>
+              <tr><td>Session gaze</td><td>Image only vs clinical information available</td><td>164-pixel within-reader shift</td><td>The reading session changed spatial attention.</td></tr>
+              <tr><td>3D search</td><td>EyeAssist-PE paired sessions</td><td>Median scroll events fell 34.5%</td><td>Six of seven radiologists scrolled less.</td></tr>
+              <tr><td>Task replication</td><td>GazeVaLM matched vs opposite task</td><td>+0.707 bits for diagnosis; −0.400 for authenticity</td><td>The effect of target matching depended on the task.</td></tr>
+              <tr><td>Fixed-model scoring</td><td>General-radiologist vs subspecialist reference</td><td>+0.150 NSS</td><td>The same model received a different alignment score.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure>
+          <img src="assets/figure6.png" alt="Reference-dependent model scoring, saliency transfer and patient-independent classification results.">
+          <figcaption><strong>Computational consequences.</strong> Changing the gaze target altered the score assigned to unchanged models, the spatial patterns learned by saliency models and downstream normal-versus-abnormal classification.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section shell">
+      <p class="eyebrow">Clinical reading</p>
+      <h2>Available information changes search and decisions</h2>
+      <figure>
+        <img src="assets/figure4.png" alt="Session-linked changes in gaze maps, volumetric search and prognostic decisions.">
+        <figcaption><strong>Paired-session evidence.</strong> The same readers viewed the same records in two sessions. The study quantifies shifts in 2D gaze convergence, 3D search behaviour and 30-day prognostic judgements.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section code-section">
+      <div class="shell two-col code-grid">
+        <div>
+          <p class="eyebrow">Reproducibility</p>
+          <h2>Auditable analysis code</h2>
+          <p>The repository provides density-map construction, fixed-pool scoring, patient-cluster inference, saliency and classification model definitions, GazeVaLM analysis, tests and configuration examples.</p>
+          <p>Clinical images, gaze records, predictions, fitted weights and numerical result files are not distributed in the code repository.</p>
+          <a class="text-link" href="https://github.com/ZhixiangWang-CN/EyeAssist-reproducibility">Browse the repository →</a>
+        </div>
+        <pre><code>git clone https://github.com/\
+ZhixiangWang-CN/EyeAssist-reproducibility.git
+
+cd EyeAssist-reproducibility
+conda env create -f environment.yml
+conda activate eyeassist-reproducibility
+python -m pip install -e '.[dev]'
+python -m unittest discover -s tests -v
+python examples/synthetic_demo.py \
+  --output outputs/synthetic_demo</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      <p>EyeAssist · Conditional human supervision for medical imaging AI</p>
+    </div>
+  </footer>
+</body>
+</html>
