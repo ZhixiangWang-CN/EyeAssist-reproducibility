@@ -151,7 +151,7 @@ def main() -> None:
 
     run_dir = output_dir / f"split_{args.split_id:03d}" / args.arm
     last_path = run_dir / "last.pt"
-    selected_path = run_dir / "selected.pt"
+    final_path = run_dir / "final.pt"
     history_path = run_dir / "history.jsonl"
     start_epoch = 1
     if last_path.exists() and not args.resume:
@@ -167,15 +167,12 @@ def main() -> None:
             raise ValueError("Resume checkpoint does not match split/arm")
         if checkpoint.get("format_version") != 2:
             raise ValueError("Resume checkpoint uses an incompatible format")
-        if checkpoint.get("checkpoint_rule") != "final_epoch":
-            raise ValueError("Resume checkpoint does not use the final-epoch protocol")
         previous = checkpoint["run_config"]
         locked = {
             "manifest_sha256": file_sha256(manifest),
             "splits_sha256": file_sha256(splits),
             "epochs": FINAL_CLASSIFIER_EPOCH,
             "seed": args.seed,
-            "checkpoint_rule": "final_epoch",
             "image_size": args.image_size,
             "batch_size": args.batch_size,
             "learning_rate": args.learning_rate,
@@ -213,7 +210,6 @@ def main() -> None:
             "manifest_sha256": file_sha256(manifest),
             "splits_sha256": file_sha256(splits),
             "epochs": FINAL_CLASSIFIER_EPOCH,
-            "checkpoint_rule": "final_epoch",
             "train_cases": sorted(train_table.case_id.astype(str)),
             "test_cases_held_out": sorted(test_table.case_id.astype(str)),
             "device": str(device),
@@ -263,17 +259,16 @@ def main() -> None:
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
             "scheduler_state_dict": scheduler.state_dict() if scheduler is not None else None,
-            "checkpoint_rule": "final_epoch",
             "run_config": run_config,
         }
         atomic_torch_save(payload, last_path)
         if epoch == FINAL_CLASSIFIER_EPOCH:
-            atomic_torch_save(payload, selected_path)
+            atomic_torch_save(payload, final_path)
         print(json.dumps(record))
 
-    if not selected_path.exists():
-        raise RuntimeError("Training finished without producing selected.pt")
-    print(f"Selected checkpoint: {selected_path}")
+    if not final_path.exists():
+        raise RuntimeError("Training finished without producing final.pt")
+    print(f"Final checkpoint: {final_path}")
 
 
 if __name__ == "__main__":

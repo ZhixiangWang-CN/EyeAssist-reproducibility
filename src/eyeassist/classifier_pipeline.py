@@ -67,7 +67,7 @@ def load_case_and_split_tables(
     if chosen.empty:
         raise ValueError(f"split_id {split_id} is absent from {split_path}")
     if chosen.case_id.duplicated().any():
-        raise ValueError("The selected split contains duplicate case_id rows")
+        raise ValueError("The requested split contains duplicate case_id rows")
     unknown_partition = set(chosen.partition) - {"train", "test"}
     if unknown_partition:
         raise ValueError(f"Unexpected partition values: {sorted(unknown_partition)}")
@@ -229,10 +229,8 @@ FINAL_CLASSIFIER_EPOCH = 60
 
 def validate_final_classifier_checkpoint(checkpoint: dict[str, Any], filename: str) -> None:
     """Validate the protocol-locked epoch-60 checkpoint."""
-    if filename != "selected.pt":
-        raise ValueError("Evaluation requires the final-epoch checkpoint named selected.pt")
-    if checkpoint.get("checkpoint_rule") != "final_epoch":
-        raise ValueError("Evaluation requires a final_epoch checkpoint")
+    if filename != "final.pt":
+        raise ValueError("Evaluation requires the checkpoint named final.pt")
     if int(checkpoint.get("epoch", -1)) != FINAL_CLASSIFIER_EPOCH:
         raise ValueError(
             f"Evaluation requires epoch {FINAL_CLASSIFIER_EPOCH}, received epoch "
@@ -241,8 +239,6 @@ def validate_final_classifier_checkpoint(checkpoint: dict[str, Any], filename: s
     run_config = checkpoint.get("run_config", {})
     if int(run_config.get("epochs", -1)) != FINAL_CLASSIFIER_EPOCH:
         raise ValueError("Checkpoint run configuration is not locked to 60 epochs")
-    if run_config.get("checkpoint_rule") != "final_epoch":
-        raise ValueError("Checkpoint run configuration does not use final_epoch")
 
 
 def atomic_torch_save(payload: dict[str, Any], path: Path) -> None:

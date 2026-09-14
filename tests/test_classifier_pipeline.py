@@ -17,18 +17,16 @@ class ClassifierPipelineTests(unittest.TestCase):
     def test_final_epoch_checkpoint(self) -> None:
         checkpoint = {
             "epoch": FINAL_CLASSIFIER_EPOCH,
-            "checkpoint_rule": "final_epoch",
             "run_config": {
                 "epochs": FINAL_CLASSIFIER_EPOCH,
-                "checkpoint_rule": "final_epoch",
             },
         }
-        validate_final_classifier_checkpoint(checkpoint, "selected.pt")
+        validate_final_classifier_checkpoint(checkpoint, "final.pt")
         with self.assertRaises(ValueError):
             validate_final_classifier_checkpoint(checkpoint, "last.pt")
         checkpoint["epoch"] = FINAL_CLASSIFIER_EPOCH - 1
         with self.assertRaises(ValueError):
-            validate_final_classifier_checkpoint(checkpoint, "selected.pt")
+            validate_final_classifier_checkpoint(checkpoint, "final.pt")
 
     def test_metrics(self) -> None:
         result = classifier_metrics(np.asarray([0, 0, 1, 1]), np.asarray([0.1, 0.4, 0.6, 0.9]))

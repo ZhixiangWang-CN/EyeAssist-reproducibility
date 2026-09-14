@@ -126,7 +126,6 @@ def main() -> None:
                         "y_true": int(label),
                         "probability_abnormal": float(score),
                         "checkpoint_epoch": int(checkpoint["epoch"]),
-                        "checkpoint_rule": str(checkpoint["checkpoint_rule"]),
                     }
                 )
     predictions = pd.DataFrame(rows).sort_values("case_id")
@@ -143,7 +142,6 @@ def main() -> None:
         "arm": args.arm,
         "checkpoint": checkpoint_path.name,
         "checkpoint_epoch": int(checkpoint["epoch"]),
-        "checkpoint_rule": str(checkpoint["checkpoint_rule"]),
         "n_test_cases": len(predictions),
         "metrics": metrics,
     }

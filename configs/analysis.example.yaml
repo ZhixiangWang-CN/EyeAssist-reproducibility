@@ -116,7 +116,6 @@ classifier:
   attention_loss: kl_target_to_cam
   cam_layer: layer4
   cam_class: true_label
-  checkpoint_rule: final_epoch
   max_epochs: 60
   optimization_seed_base: 20260824
   optimization_seed_rule: base_plus_split_id

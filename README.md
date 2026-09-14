@@ -83,7 +83,7 @@ python scripts/03_density_pool_analysis.py \
 | Classification at fixed specificity | `scripts/16_classification_fixed_specificity.py` | mean split sensitivity at a declared specificity with paired case-cluster intervals |
 | Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
 | Gaze-supervised classification | `make_classifier`, `attention_kl` | CE + 0.5 KL(target || layer4 CAM), with CAM computed for the true class |
-| ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | 60-epoch training, final-epoch `selected.pt` and local training history |
+| ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | 60-epoch training, final checkpoint and local training history |
 | ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | final-epoch checkpoint verification, local case-level probabilities and operating-point metrics |
 | Three-of-five reader subgroup sensitivity | `scripts/15_reader_profession_sensitivity.py` | all ten three-member subspecialist subsets evaluated with equal-size references |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py`, `summarize_task_interaction.py`, `summarize_task_concentration.py` | locally generated task contrasts, authenticity strata, entropy and effective support |
@@ -153,10 +153,10 @@ The public rerun protocol uses 60 epochs. Split `i` uses optimization seed
 `20260824 + i` (20260824--20260873 for splits 0--49), shared across the four arms within that
 split. The released specification uses the normalized rectified `layer4` CAM for the ground-truth class,
 no geometric augmentation and a gaze-loss weight of 0.5. Training is locked to 60 epochs, and
-`selected.pt` is always the final-epoch checkpoint. No validation or test metric selects model
-weights.
+the final-epoch weights are saved as `final.pt`. No validation or test metric is used during
+training.
 
-Evaluate the selected checkpoint once:
+Evaluate the final checkpoint once:
 
 ```bash
 python scripts/14_evaluate_resnet50_classifier.py \
@@ -164,7 +164,7 @@ python scripts/14_evaluate_resnet50_classifier.py \
   --splits data/private/neo/classifier_splits.csv \
   --split-id 0 \
   --arm informed_gaze \
-  --checkpoint outputs/classifier/split_000/informed_gaze/selected.pt \
+  --checkpoint outputs/classifier/split_000/informed_gaze/final.pt \
   --output-csv outputs/classifier/split_000/informed_gaze/test_predictions.csv
 ```
 
