@@ -168,8 +168,8 @@ python scripts/14_evaluate_resnet50_classifier.py \
   --output-csv outputs/classifier/split_000/informed_gaze/test_predictions.csv
 ```
 
-Every checkpoint records the split and arm, model/optimizer/scheduler states, epoch, final-epoch
-rule, run parameters, input-table hashes and the exact train and held-out test case IDs.
+Every checkpoint records the split and arm, model/optimizer/scheduler states, epoch, the 60-epoch
+run configuration, input-table hashes and the exact train and held-out test case IDs.
 An existing run directory is never silently overwritten; continuing it requires `--resume`, which
 also verifies the locked input hashes and all optimization settings.
 
