@@ -229,7 +229,7 @@ def is_final_classifier_epoch(epoch: int) -> bool:
 
 
 def validate_final_classifier_checkpoint(checkpoint: dict[str, Any], filename: str) -> None:
-    """Reject any checkpoint that is not the protocol-locked epoch-60 artifact."""
+    """Validate the protocol-locked epoch-60 checkpoint."""
     if filename != "selected.pt":
         raise ValueError("Evaluation requires the final-epoch checkpoint named selected.pt")
     if checkpoint.get("checkpoint_rule") != "final_epoch":

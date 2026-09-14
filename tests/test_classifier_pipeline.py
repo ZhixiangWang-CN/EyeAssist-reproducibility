@@ -19,11 +19,11 @@ class ClassifierPipelineTests(unittest.TestCase):
         self.assertFalse(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH - 1))
         self.assertTrue(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH))
 
-    def test_epoch_after_protocol_endpoint_is_rejected(self) -> None:
+    def test_final_epoch_bounds(self) -> None:
         with self.assertRaises(ValueError):
             is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH + 1)
 
-    def test_evaluation_accepts_only_epoch_60_final_checkpoint(self) -> None:
+    def test_final_epoch_checkpoint(self) -> None:
         checkpoint = {
             "epoch": FINAL_CLASSIFIER_EPOCH,
             "checkpoint_rule": "final_epoch",
