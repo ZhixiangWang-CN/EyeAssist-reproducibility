@@ -227,15 +227,6 @@ def classifier_metrics(labels: np.ndarray, probabilities: np.ndarray) -> dict[st
 FINAL_CLASSIFIER_EPOCH = 60
 
 
-def is_final_classifier_epoch(epoch: int) -> bool:
-    """Return whether ``epoch`` is the protocol-locked final training epoch."""
-    if epoch < 1 or epoch > FINAL_CLASSIFIER_EPOCH:
-        raise ValueError(
-            f"epoch must be between 1 and {FINAL_CLASSIFIER_EPOCH}, received {epoch}"
-        )
-    return epoch == FINAL_CLASSIFIER_EPOCH
-
-
 def validate_final_classifier_checkpoint(checkpoint: dict[str, Any], filename: str) -> None:
     """Validate the protocol-locked epoch-60 checkpoint."""
     if filename != "selected.pt":

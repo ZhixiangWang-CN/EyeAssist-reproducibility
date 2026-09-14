@@ -8,21 +8,12 @@ import pandas as pd
 from eyeassist.classifier_pipeline import (
     FINAL_CLASSIFIER_EPOCH,
     classifier_metrics,
-    is_final_classifier_epoch,
     load_case_and_split_tables,
     validate_final_classifier_checkpoint,
 )
 
 
 class ClassifierPipelineTests(unittest.TestCase):
-    def test_final_epoch_selection(self) -> None:
-        self.assertFalse(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH - 1))
-        self.assertTrue(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH))
-
-    def test_final_epoch_bounds(self) -> None:
-        with self.assertRaises(ValueError):
-            is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH + 1)
-
     def test_final_epoch_checkpoint(self) -> None:
         checkpoint = {
             "epoch": FINAL_CLASSIFIER_EPOCH,

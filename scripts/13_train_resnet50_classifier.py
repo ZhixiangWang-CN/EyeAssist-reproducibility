@@ -15,7 +15,6 @@ from eyeassist.classifier_pipeline import (
     FINAL_CLASSIFIER_EPOCH,
     ClassifierDataset,
     atomic_torch_save,
-    is_final_classifier_epoch,
     load_case_and_split_tables,
     write_json,
 )
@@ -249,12 +248,10 @@ def main() -> None:
         if scheduler is not None:
             scheduler.step()
 
-        selected = is_final_classifier_epoch(epoch)
         record = {
             "epoch": epoch,
             "train_loss": float(np.mean(epoch_losses)),
             "learning_rate": float(optimizer.param_groups[0]["lr"]),
-            "selected": bool(selected),
         }
         with history_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record) + "\n")
@@ -270,7 +267,7 @@ def main() -> None:
             "run_config": run_config,
         }
         atomic_torch_save(payload, last_path)
-        if selected:
+        if epoch == FINAL_CLASSIFIER_EPOCH:
             atomic_torch_save(payload, selected_path)
         print(json.dumps(record))
 
