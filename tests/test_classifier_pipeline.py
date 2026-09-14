@@ -15,7 +15,7 @@ from eyeassist.classifier_pipeline import (
 
 
 class ClassifierPipelineTests(unittest.TestCase):
-    def test_only_epoch_60_is_selected(self) -> None:
+    def test_final_epoch_selection(self) -> None:
         self.assertFalse(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH - 1))
         self.assertTrue(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH))
 
