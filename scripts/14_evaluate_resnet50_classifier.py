@@ -15,6 +15,7 @@ from eyeassist.classifier_pipeline import (
     ClassifierDataset,
     classifier_metrics,
     load_case_and_split_tables,
+    validate_final_classifier_checkpoint,
     write_json,
 )
 from eyeassist.models import make_classifier, seed_everything
@@ -68,9 +69,8 @@ def main() -> None:
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
     if int(checkpoint["split_id"]) != args.split_id or checkpoint["arm"] != args.arm:
         raise ValueError("Checkpoint split/arm does not match the requested evaluation")
+    validate_final_classifier_checkpoint(checkpoint, checkpoint_path.name)
     run_config = checkpoint["run_config"]
-    if checkpoint_path.name != "selected.pt":
-        raise ValueError("Evaluation requires the explicitly selected checkpoint named selected.pt")
 
     manifest = args.manifest.expanduser().resolve()
     splits = args.splits.expanduser().resolve()
@@ -145,7 +145,6 @@ def main() -> None:
         "checkpoint_epoch": int(checkpoint["epoch"]),
         "checkpoint_rule": str(checkpoint["checkpoint_rule"]),
         "n_test_cases": len(predictions),
-        "test_cases_used_for_checkpoint_selection": False,
         "metrics": metrics,
     }
     write_json(report, output_csv.with_suffix(".metrics.json"))

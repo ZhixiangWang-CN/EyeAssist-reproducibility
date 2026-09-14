@@ -216,25 +216,34 @@ def classifier_metrics(labels: np.ndarray, probabilities: np.ndarray) -> dict[st
     }
 
 
-def checkpoint_is_better(
-    *,
-    rule: str,
-    epoch: int,
-    max_epochs: int,
-    validation_metrics: dict[str, float] | None,
-    best_value: float | None,
-) -> tuple[bool, float | None]:
-    if rule == "last_epoch":
-        return epoch == max_epochs, None
-    if validation_metrics is None:
-        raise ValueError(f"Checkpoint rule {rule!r} requires a training-only validation set")
-    if rule == "best_val_loss":
-        value = float(validation_metrics["loss"])
-        return best_value is None or value < best_value, value
-    if rule == "best_val_auroc":
-        value = float(validation_metrics["auroc"])
-        return best_value is None or value > best_value, value
-    raise ValueError(f"Unknown checkpoint rule: {rule}")
+FINAL_CLASSIFIER_EPOCH = 60
+
+
+def is_final_classifier_epoch(epoch: int) -> bool:
+    """Return whether ``epoch`` is the protocol-locked final training epoch."""
+    if epoch < 1 or epoch > FINAL_CLASSIFIER_EPOCH:
+        raise ValueError(
+            f"epoch must be between 1 and {FINAL_CLASSIFIER_EPOCH}, received {epoch}"
+        )
+    return epoch == FINAL_CLASSIFIER_EPOCH
+
+
+def validate_final_classifier_checkpoint(checkpoint: dict[str, Any], filename: str) -> None:
+    """Reject any checkpoint that is not the protocol-locked epoch-60 artifact."""
+    if filename != "selected.pt":
+        raise ValueError("Evaluation requires the final-epoch checkpoint named selected.pt")
+    if checkpoint.get("checkpoint_rule") != "final_epoch":
+        raise ValueError("Evaluation requires a final_epoch checkpoint")
+    if int(checkpoint.get("epoch", -1)) != FINAL_CLASSIFIER_EPOCH:
+        raise ValueError(
+            f"Evaluation requires epoch {FINAL_CLASSIFIER_EPOCH}, received epoch "
+            f"{checkpoint.get('epoch')}"
+        )
+    run_config = checkpoint.get("run_config", {})
+    if int(run_config.get("epochs", -1)) != FINAL_CLASSIFIER_EPOCH:
+        raise ValueError("Checkpoint run configuration is not locked to 60 epochs")
+    if run_config.get("checkpoint_rule") != "final_epoch":
+        raise ValueError("Checkpoint run configuration does not use final_epoch")
 
 
 def atomic_torch_save(payload: dict[str, Any], path: Path) -> None:

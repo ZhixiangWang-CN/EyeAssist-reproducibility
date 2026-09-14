@@ -1,4 +1,4 @@
-"""EyeAssist reproducibility toolkit."""
+"""Analysis toolkit for The Static Gaze Fallacy."""
 
 from .gaze import (
     center_of_mass,

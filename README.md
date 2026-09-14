@@ -1,8 +1,6 @@
 <div align="center">
 
-# EyeAssist Reproducibility
-
-**Conditional radiology-gaze targets across reader groups and reading states**
+# The static gaze fallacy: reader state shapes supervision targets in medical imaging AI
 
 Code, configuration and audit trails for the EyeAssist analyses described in the accompanying
 Nature Machine Intelligence manuscript.
@@ -30,7 +28,7 @@ repository implements the manuscript's auditable analysis backbone:
 - GazeVaLM task-direction stratification and source-pool concentration summaries;
 - configurable case-grouped repeated partitions;
 - ResNet-34 U-Net-style saliency and ResNet-50 auxiliary gaze-supervision model factories;
-- leakage-safe ResNet-50 training, checkpoint selection and held-out evaluation entry points;
+- protocol-locked ResNet-50 training and held-out evaluation entry points;
 - deterministic synthetic tests that require no clinical data.
 
 Patient-cluster bootstrap inference retains all records from a sampled patient and all paired model
@@ -85,8 +83,8 @@ python scripts/03_density_pool_analysis.py \
 | Classification at fixed specificity | `scripts/16_classification_fixed_specificity.py` | mean split sensitivity at a declared specificity with paired case-cluster intervals |
 | Saliency transfer | `make_saliency_model`, `saliency_objective` | per-split target matrix |
 | Gaze-supervised classification | `make_classifier`, `attention_kl` | CE + 0.5 KL(target || layer4 CAM), with CAM computed for the true class |
-| ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | `last.pt`, leakage-safe `selected.pt` and local training history |
-| ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | local case-level probabilities and operating-point metrics |
+| ResNet-50 training and checkpointing | `scripts/13_train_resnet50_classifier.py` | 60-epoch training, final-epoch `selected.pt` and local training history |
+| ResNet-50 held-out evaluation | `scripts/14_evaluate_resnet50_classifier.py` | final-epoch checkpoint verification, local case-level probabilities and operating-point metrics |
 | Three-of-five reader subgroup sensitivity | `scripts/15_reader_profession_sensitivity.py` | all ten three-member subspecialist subsets evaluated with equal-size references |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py`, `summarize_task_interaction.py`, `summarize_task_concentration.py` | locally generated task contrasts, authenticity strata, entropy and effective support |
 
@@ -143,22 +141,19 @@ python scripts/13_train_resnet50_classifier.py \
   --splits data/private/neo/classifier_splits.csv \
   --split-id 0 \
   --arm informed_gaze \
-  --epochs 60 \
   --seed 20260824 \
   --pretrained \
   --cam-class true_label \
   --horizontal-flip-probability 0 \
-  --checkpoint-rule last_epoch \
   --output-dir outputs/classifier
 ```
 
 The public rerun protocol uses 60 epochs. Split `i` uses optimization seed
 `20260824 + i` (20260824--20260873 for splits 0--49), shared across the four arms within that
 split. The released specification uses the normalized rectified `layer4` CAM for the ground-truth class,
-no geometric augmentation and a gaze-loss weight of 0.5. `last_epoch` is the default rule for a train/test-only split and saves epoch 60 as
-`selected.pt`. Alternatively, `best_val_loss` or `best_val_auroc` requires `--validation-cases`;
-that validation subset is drawn only from the training cases. The held-out test cases are never
-loaded by the training loop and cannot select a checkpoint.
+no geometric augmentation and a gaze-loss weight of 0.5. Training is locked to 60 epochs, and
+`selected.pt` is always the final-epoch checkpoint. No validation or test metric selects model
+weights.
 
 Evaluate the selected checkpoint once:
 
@@ -172,10 +167,10 @@ python scripts/14_evaluate_resnet50_classifier.py \
   --output-csv outputs/classifier/split_000/informed_gaze/test_predictions.csv
 ```
 
-Every checkpoint records the split and arm, model/optimizer/scheduler states, epoch, selection
-rule, run parameters, input-table hashes and the exact train, validation and held-out test case IDs.
+Every checkpoint records the split and arm, model/optimizer/scheduler states, epoch, final-epoch
+rule, run parameters, input-table hashes and the exact train and held-out test case IDs.
 An existing run directory is never silently overwritten; continuing it requires `--resume`, which
-also verifies the locked input hashes and all optimization/model-selection settings.
+also verifies the locked input hashes and all optimization settings.
 
 Recompute the fixed-specificity sensitivity analysis from the locally retained paired prediction
 table:

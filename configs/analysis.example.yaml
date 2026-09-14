@@ -116,15 +116,13 @@ classifier:
   attention_loss: kl_target_to_cam
   cam_layer: layer4
   cam_class: true_label
-  checkpoint_rule: last_epoch
+  checkpoint_rule: final_epoch
   max_epochs: 60
-  validation_cases: 0
   optimization_seed_base: 20260824
   optimization_seed_rule: base_plus_split_id
   optimization_seed_range: [20260824, 20260873]
   share_seed_across_arms_within_split: true
   horizontal_flip_probability: 0.0
-  checkpoint_selection_uses_test_data: false
   optimizer: adam
 
 saliency:

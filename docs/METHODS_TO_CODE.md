@@ -29,7 +29,7 @@ locked study record.
 | Classifier fixed-specificity sensitivity | `scripts/16_classification_fixed_specificity.py` with locally supplied paired predictions | empirical split ROC interpolated at 80% specificity; 20,000 label-stratified case-cluster resamples; seed 20260827 | implemented/audited; local input required |
 | ResNet-50 auxiliary gaze loss | `models.py` | CE + 0.5 KL(human || CAM); normalized rectified `layer4` CAM for the true class | implemented |
 | ResNet-50 public rerun protocol | `scripts/13_train_resnet50_classifier.py` | 60 epochs; seed `20260824 + split_id`, shared across arms; no augmentation; test cases excluded; epoch-60 selection; atomic model/optimizer/scheduler checkpoints | implemented |
-| ResNet-50 held-out testing | `scripts/14_evaluate_resnet50_classifier.py` | selected checkpoint only; locked split/arm and test-case verification; case-level abnormal probability | implemented |
+| ResNet-50 held-out testing | `scripts/14_evaluate_resnet50_classifier.py` | epoch-60 final checkpoint only; locked split/arm and test-case verification; case-level abnormal probability | implemented |
 | U-Net-style saliency model | `models.py` | ResNet-34 encoder; KL + correlation objective; Adam; cosine scheduling; 60 epochs; final-epoch checkpoint; no early stopping | implemented |
 | GazeVaLM fixed-pool task analysis | `external/gazevalm/run_fixed_pool.py` | target reader excluded; paired source identities; exact four-reader pools; source-study-cluster bootstrap | implemented/tested |
 | GazeVaLM task-direction interaction | `external/gazevalm/summarize_task_interaction.py` | task contrasts stratified by real/synthetic authenticity with source-study clustering | implemented/tested |

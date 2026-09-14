@@ -6,45 +6,38 @@ import numpy as np
 import pandas as pd
 
 from eyeassist.classifier_pipeline import (
-    checkpoint_is_better,
+    FINAL_CLASSIFIER_EPOCH,
     classifier_metrics,
+    is_final_classifier_epoch,
     load_case_and_split_tables,
+    validate_final_classifier_checkpoint,
 )
 
 
 class ClassifierPipelineTests(unittest.TestCase):
-    def test_last_epoch_checkpoint_rule(self) -> None:
-        self.assertEqual(
-            checkpoint_is_better(
-                rule="last_epoch",
-                epoch=2,
-                max_epochs=3,
-                validation_metrics=None,
-                best_value=None,
-            ),
-            (False, None),
-        )
-        self.assertEqual(
-            checkpoint_is_better(
-                rule="last_epoch",
-                epoch=3,
-                max_epochs=3,
-                validation_metrics=None,
-                best_value=None,
-            ),
-            (True, None),
-        )
+    def test_only_epoch_60_is_selected(self) -> None:
+        self.assertFalse(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH - 1))
+        self.assertTrue(is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH))
 
-    def test_validation_checkpoint_never_uses_test_metric(self) -> None:
-        selected, value = checkpoint_is_better(
-            rule="best_val_auroc",
-            epoch=2,
-            max_epochs=5,
-            validation_metrics={"loss": 0.4, "auroc": 0.8},
-            best_value=0.7,
-        )
-        self.assertTrue(selected)
-        self.assertEqual(value, 0.8)
+    def test_epoch_after_protocol_endpoint_is_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            is_final_classifier_epoch(FINAL_CLASSIFIER_EPOCH + 1)
+
+    def test_evaluation_accepts_only_epoch_60_final_checkpoint(self) -> None:
+        checkpoint = {
+            "epoch": FINAL_CLASSIFIER_EPOCH,
+            "checkpoint_rule": "final_epoch",
+            "run_config": {
+                "epochs": FINAL_CLASSIFIER_EPOCH,
+                "checkpoint_rule": "final_epoch",
+            },
+        }
+        validate_final_classifier_checkpoint(checkpoint, "selected.pt")
+        with self.assertRaises(ValueError):
+            validate_final_classifier_checkpoint(checkpoint, "last.pt")
+        checkpoint["epoch"] = FINAL_CLASSIFIER_EPOCH - 1
+        with self.assertRaises(ValueError):
+            validate_final_classifier_checkpoint(checkpoint, "selected.pt")
 
     def test_metrics(self) -> None:
         result = classifier_metrics(np.asarray([0, 0, 1, 1]), np.asarray([0.1, 0.4, 0.6, 0.9]))
