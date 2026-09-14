@@ -166,6 +166,10 @@ def main() -> None:
         checkpoint = torch.load(last_path, map_location=device, weights_only=False)
         if checkpoint["split_id"] != args.split_id or checkpoint["arm"] != args.arm:
             raise ValueError("Resume checkpoint does not match split/arm")
+        if checkpoint.get("format_version") != 2:
+            raise ValueError("Resume checkpoint uses an incompatible format")
+        if checkpoint.get("checkpoint_rule") != "final_epoch":
+            raise ValueError("Resume checkpoint does not use the final-epoch protocol")
         previous = checkpoint["run_config"]
         locked = {
             "manifest_sha256": file_sha256(manifest),

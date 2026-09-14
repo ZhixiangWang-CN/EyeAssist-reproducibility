@@ -51,9 +51,9 @@ def load_case_and_split_tables(
 ) -> pd.DataFrame:
     if arm not in ARMS:
         raise ValueError(f"Unknown arm {arm!r}; expected one of {sorted(ARMS)}")
-    manifest = pd.read_csv(manifest_path, dtype={"case_id": str})
-    splits = pd.read_csv(split_path, dtype={"case_id": str})
-    required_manifest = {"case_id", "image_path", "label"}
+    manifest = pd.read_csv(manifest_path, dtype={"case_id": str, "patient_id": str})
+    splits = pd.read_csv(split_path, dtype={"case_id": str, "patient_id": str})
+    required_manifest = {"case_id", "patient_id", "image_path", "label"}
     missing = required_manifest - set(manifest.columns)
     if missing:
         raise ValueError(f"Manifest is missing columns: {sorted(missing)}")
@@ -71,7 +71,15 @@ def load_case_and_split_tables(
     unknown_partition = set(chosen.partition) - {"train", "test"}
     if unknown_partition:
         raise ValueError(f"Unexpected partition values: {sorted(unknown_partition)}")
-    table = chosen.merge(manifest, on="case_id", how="left", validate="one_to_one")
+    manifest_lookup = manifest.set_index("case_id")
+    for column in ("patient_id", "label"):
+        if column in chosen:
+            expected = chosen.case_id.map(manifest_lookup[column]).astype(str)
+            observed = chosen[column].astype(str)
+            if not observed.equals(expected):
+                raise ValueError(f"Split-table {column} values differ from the manifest")
+    split_columns = chosen[["split_id", "case_id", "partition"]]
+    table = split_columns.merge(manifest, on="case_id", how="left", validate="one_to_one")
     if table.image_path.isna().any():
         missing_cases = table.loc[table.image_path.isna(), "case_id"].tolist()
         raise ValueError(f"Cases missing from manifest: {missing_cases[:5]}")

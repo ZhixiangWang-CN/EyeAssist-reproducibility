@@ -128,7 +128,8 @@ Install the optional model dependencies:
 python -m pip install -e '.[models]'
 ```
 
-The manifest uses one row per case. The three gaze-supervised arms additionally require
+The manifest uses one row per image record and includes both `case_id` and `patient_id`. The three
+gaze-supervised arms additionally require
 `gaze_generalist_path`, `gaze_cold_read_path` and `gaze_informed_path`; values may point to a
 non-negative `.npy` density or grayscale density image. Generated checkpoints and predictions are
 written below `outputs/` and remain excluded from Git.

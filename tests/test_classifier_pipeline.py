@@ -57,14 +57,26 @@ class ClassifierPipelineTests(unittest.TestCase):
                 (root / name).touch()
             pd.DataFrame(
                 [
-                    {"case_id": "a", "image_path": "a.png", "label": 0},
-                    {"case_id": "b", "image_path": "b.png", "label": 1},
+                    {"case_id": "a", "patient_id": "p1", "image_path": "a.png", "label": 0},
+                    {"case_id": "b", "patient_id": "p2", "image_path": "b.png", "label": 1},
                 ]
             ).to_csv(root / "manifest.csv", index=False)
             pd.DataFrame(
                 [
-                    {"split_id": 0, "case_id": "a", "partition": "train"},
-                    {"split_id": 0, "case_id": "b", "partition": "test"},
+                    {
+                        "split_id": 0,
+                        "case_id": "a",
+                        "patient_id": "p1",
+                        "label": 0,
+                        "partition": "train",
+                    },
+                    {
+                        "split_id": 0,
+                        "case_id": "b",
+                        "patient_id": "p2",
+                        "label": 1,
+                        "partition": "test",
+                    },
                 ]
             ).to_csv(root / "splits.csv", index=False)
             table = load_case_and_split_tables(
