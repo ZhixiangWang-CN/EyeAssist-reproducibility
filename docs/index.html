@@ -21,7 +21,7 @@
       <p class="subtitle">Reader state shapes supervision targets in medical imaging AI</p>
       <p class="lede">EyeAssist shows that clinical gaze is not an observer-independent image label. The reader population, task and available clinical information determine the gaze distribution used for evaluation and learning.</p>
       <nav class="actions" aria-label="Project links">
-        <a class="button primary" href="https://github.com/ZhixiangWang-CN/EyeAssist-reproducibility">Code</a>
+        <a class="button primary" href="https://github.com/ZhixiangWang-CN/static-gaze-fallacy">Code</a>
         <a class="button" href="https://huggingface.co/datasets/fvewa/EyeAssist">Dataset</a>
         <span class="button disabled" aria-disabled="true">Preprint forthcoming</span>
       </nav>
@@ -126,12 +126,12 @@
           <h2>Auditable analysis code</h2>
           <p>The repository provides density-map construction, fixed-pool scoring, patient-cluster inference, saliency and classification model definitions, GazeVaLM analysis, tests and configuration examples.</p>
           <p>Clinical images, gaze records, predictions, fitted weights and numerical result files are not distributed in the code repository.</p>
-          <a class="text-link" href="https://github.com/ZhixiangWang-CN/EyeAssist-reproducibility">Browse the repository →</a>
+          <a class="text-link" href="https://github.com/ZhixiangWang-CN/static-gaze-fallacy">Browse the repository →</a>
         </div>
         <pre><code>git clone https://github.com/\
-ZhixiangWang-CN/EyeAssist-reproducibility.git
+ZhixiangWang-CN/static-gaze-fallacy.git
 
-cd EyeAssist-reproducibility
+cd static-gaze-fallacy
 conda env create -f environment.yml
 conda activate eyeassist-reproducibility
 python -m pip install -e '.[dev]'

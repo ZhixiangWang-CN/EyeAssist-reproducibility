@@ -5,7 +5,7 @@
 Code, configuration and audit trails for the EyeAssist analyses described in the accompanying
 Nature Machine Intelligence manuscript.
 
-[Project page](https://zhixiangwang-cn.github.io/EyeAssist-reproducibility/) · [Quick start](#quick-start) · [Analysis map](#analysis-map) · [Data access](#data-access)
+[Project page](https://zhixiangwang-cn.github.io/static-gaze-fallacy/) · [Quick start](#quick-start) · [Analysis map](#analysis-map) · [Data access](#data-access)
 
 </div>
 
@@ -37,8 +37,8 @@ arms together.
 ## Quick start
 
 ```bash
-git clone https://github.com/ZhixiangWang-CN/EyeAssist-reproducibility.git
-cd EyeAssist-reproducibility
+git clone https://github.com/ZhixiangWang-CN/static-gaze-fallacy.git
+cd static-gaze-fallacy
 conda env create -f environment.yml
 conda activate eyeassist-reproducibility
 python -m pip install -e '.[dev]'
